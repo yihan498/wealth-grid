@@ -711,6 +711,7 @@ input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner
   color: var(--text-3);
   font-size: 11px;
   cursor: pointer;
+  flex-shrink: 0;
   transition: color .15s var(--ease-out), border-color .15s var(--ease-out), background .15s var(--ease-out);
   white-space: nowrap;
 }
