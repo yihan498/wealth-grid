@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#0a0a0f">
+  <title>财富自由指南灯</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='6' fill='%23ffd166'/%3E%3Ccircle cx='16' cy='16' r='10' fill='none' stroke='%23ffd166' stroke-opacity='.35' stroke-width='1.4'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=JetBrains+Mono:wght@300;400;500;600&family=Noto+Sans+SC:wght@300;400;500;600;700&family=Noto+Serif+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+
+  <!-- 背景星空层 -->
+  <canvas id="starfield" aria-hidden="true"></canvas>
+
+  <main class="layout">
+
+    <!-- 左 1/3 账本面板 -->
+    <aside class="ledger" aria-label="账本面板">
+      <header class="brand">
+        <span class="brand__mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="22" height="22"><circle cx="12" cy="12" r="4.5" fill="#ffd166"/><circle cx="12" cy="12" r="8" fill="none" stroke="#ffd166" stroke-opacity=".35" stroke-width="1.2"/></svg>
+        </span>
+        <div>
+          <h1 class="brand__title">财富自由指南灯</h1>
+          <p class="brand__sub">每一笔收入，点亮一颗人生星辰</p>
+        </div>
+        <button class="icon-btn" id="btn-settings" title="设置" aria-label="设置">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.03 1.56V21a2 2 0 1 1-4 0v-.08a1.7 1.7 0 0 0-1.11-1.56 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.56-1.03H3a2 2 0 1 1 0-4h.08A1.7 1.7 0 0 0 4.6 9 1.7 1.7 0 0 0 4.26 7.13L4.2 7.07A2 2 0 1 1 7.03 4.24l.06.06A1.7 1.7 0 0 0 9 4.6 1.7 1.7 0 0 0 10.03 3.04V3a2 2 0 1 1 4 0v.08A1.7 1.7 0 0 0 15 4.6a1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9c.05.39.27.74.6.96.32.22.7.32 1.07.29H21a2 2 0 1 1 0 4h-.08a1.7 1.7 0 0 0-1.52 1.03z"/></svg>
+        </button>
+      </header>
+
+      <!-- 财富自由进度卡 · v2 -->
+      <section class="progress-card">
+        <header class="progress-card__head">
+          <span class="progress-card__title">财富自由之旅</span>
+          <span class="progress-card__pct"><span id="ring-pct">0.0</span><span class="progress-card__pct-sym">%</span></span>
+        </header>
+
+        <div class="progress-card__hero">
+          <span class="progress-card__big" id="lit-count">0</span>
+          <span class="progress-card__big-unit">天</span>
+        </div>
+        <div class="progress-card__hero-sub">
+          已买自由 · 距完成还差 <em id="remaining-days">0</em> 天
+        </div>
+
+        <div class="dual-bar" aria-hidden="true">
+          <span class="dual-bar__asset"  id="bar-asset"></span>
+          <span class="dual-bar__income" id="bar-income"></span>
+        </div>
+
+        <div class="breakdown">
+          <div class="breakdown__row breakdown__row--asset" id="row-asset" hidden>
+            <span class="breakdown__icon breakdown__icon--asset"></span>
+            <span class="breakdown__label">资产带来</span>
+            <span class="breakdown__value" id="asset-days">0</span>
+            <span class="breakdown__unit">天</span>
+            <span class="breakdown__hint"><em id="asset-amount">¥0</em></span>
+          </div>
+          <div class="breakdown__row breakdown__row--income">
+            <span class="breakdown__icon breakdown__icon--income"></span>
+            <span class="breakdown__label">净储蓄带来</span>
+            <span class="breakdown__value" id="income-days">0</span>
+            <span class="breakdown__unit">天</span>
+            <span class="breakdown__hint"><em id="net-saving">¥0</em></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 添加交易 -->
+      <section class="tx-form">
+        <div class="seg" role="tablist" aria-label="交易类型">
+          <button class="seg__btn is-active" data-type="income" role="tab" aria-selected="true">
+            <span class="seg__dot seg__dot--income"></span>收入
+          </button>
+          <button class="seg__btn" data-type="expense" role="tab" aria-selected="false">
+            <span class="seg__dot seg__dot--expense"></span>支出
+          </button>
+        </div>
+        <label class="field field--amount">
+          <span class="field__label">金额</span>
+          <div class="field__row">
+            <span class="field__prefix">¥</span>
+            <input id="tx-amount" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0.00" autocomplete="off">
+          </div>
+        </label>
+        <div class="field-grid">
+          <div class="field">
+            <span class="field__label">日期</span>
+            <div class="date-input" data-picker>
+              <input type="hidden" id="tx-date">
+              <button type="button" class="date-input__trigger" aria-haspopup="dialog">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+                <span class="date-input__value">选择日期</span>
+              </button>
+              <div class="date-popover" hidden role="dialog" aria-label="日期选择">
+                <header class="date-popover__head">
+                  <button type="button" class="date-popover__nav" data-nav="prev" aria-label="上一月">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+                  </button>
+                  <span class="date-popover__title"></span>
+                  <button type="button" class="date-popover__nav" data-nav="next" aria-label="下一月">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+                  </button>
+                </header>
+                <div class="date-popover__weekdays"><span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span></div>
+                <div class="date-popover__grid"></div>
+                <footer class="date-popover__foot">
+                  <button type="button" class="date-popover__btn" data-action="today">今天</button>
+                  <button type="button" class="date-popover__btn" data-action="clear">清除</button>
+                </footer>
+              </div>
+            </div>
+          </div>
+          <label class="field">
+            <span class="field__label">备注</span>
+            <input id="tx-note" type="text" maxlength="40" placeholder="选填">
+          </label>
+        </div>
+        <button class="btn btn--primary" id="btn-submit">
+          <span class="btn__shimmer" aria-hidden="true"></span>
+          <span class="btn__text">点亮人生</span>
+        </button>
+      </section>
+
+      <!-- 统计仪表盘 -->
+      <section class="stats">
+        <div class="stat"><div class="stat__label">总收入</div><div class="stat__value stat__value--income" id="st-income">¥0</div></div>
+        <div class="stat"><div class="stat__label">总支出</div><div class="stat__value stat__value--expense" id="st-expense">¥0</div></div>
+        <div class="stat"><div class="stat__label">日均花销</div><div class="stat__value" id="st-avg">¥0</div></div>
+        <div class="stat"><div class="stat__label">记账天数</div><div class="stat__value" id="st-days">0</div></div>
+      </section>
+
+      <!-- 数据状态 & 导出 -->
+      <div class="data-status">
+        <span class="data-status__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22a10 10 0 1 1 0-20 10 10 0 0 1 0 20z"/><path d="M9 12l2 2 4-4"/></svg>
+        </span>
+        <span class="data-status__text" id="data-status-text">已保存到本地</span>
+        <button class="data-status__export" id="btn-export" title="导出 JSON 备份">
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          导出
+        </button>
+        <button class="data-status__export" id="btn-import" title="从 JSON 备份恢复数据">
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 14 12 9 17 14"/><line x1="12" y1="9" x2="12" y2="21"/></svg>
+          导入
+        </button>
+        <input type="file" id="file-import" accept=".json" style="display:none">
+      </div>
+
+      <!-- 最近交易 -->
+      <section class="tx-list" aria-label="最近交易">
+        <div class="tx-list__head">
+          <h2>最近交易</h2>
+          <span class="tx-list__count" id="tx-count">0</span>
+        </div>
+        <ul class="tx-list__items" id="tx-items" role="list"></ul>
+        <div class="tx-list__empty" id="tx-empty">
+          <p>尚未记录任何交易</p>
+          <p class="tx-list__hint">每一笔收入都将点亮你的人生方格</p>
+        </div>
+      </section>
+
+    </aside>
+
+    <!-- 右 2/3 人生方格 -->
+    <section class="stage" aria-label="人生方格视图">
+      <div class="stage__chrome">
+        <div class="stage__title">
+          <span class="stage__title-cn">人生方格</span>
+          <span class="stage__title-en">— Days of Freedom</span>
+        </div>
+        <div class="stage__legend">
+          <span class="legend-item"><i class="legend-swatch legend-swatch--lit"></i>净自由</span>
+          <span class="legend-item" id="legend-expense" hidden><i class="legend-swatch legend-swatch--expense"></i>支出消耗</span>
+          <span class="legend-item"><i class="legend-swatch legend-swatch--unlit"></i>未点亮</span>
+          <span class="legend-item" id="legend-overflow" hidden><i class="legend-swatch legend-swatch--over"></i>超额</span>
+        </div>
+      </div>
+      <div class="stage__canvas-wrap">
+        <canvas id="grid" aria-label="人生方格 Canvas"></canvas>
+        <div class="stage__hint" id="stage-hint">每一格代表你生命中的一天</div>
+      </div>
+      <div class="stage__footer">
+        <span id="stage-footer-text">设置生日后开始你的财富自由之旅</span>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- 引导/设置对话 -->
+  <div class="overlay" id="overlay" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <header class="modal__head">
+        <h2 id="modal-title">点燃人生第一颗星辰</h2>
+        <p>告诉我你的生日，我们计算从今天起到 <strong id="modal-target-age-display">80</strong> 岁还有多少天可以被你点亮。</p>
+      </header>
+      <div class="modal__body">
+        <div class="field">
+          <span class="field__label">出生日期</span>
+          <div class="date-input" data-picker>
+            <input type="hidden" id="cfg-birth" required>
+            <button type="button" class="date-input__trigger" aria-haspopup="dialog">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+              <span class="date-input__value">选择出生日期</span>
+            </button>
+            <div class="date-popover" hidden role="dialog" aria-label="日期选择">
+              <header class="date-popover__head">
+                <button type="button" class="date-popover__nav" data-nav="prev-year" aria-label="上一年">«</button>
+                <button type="button" class="date-popover__nav" data-nav="prev" aria-label="上一月">
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+                </button>
+                <span class="date-popover__title"></span>
+                <button type="button" class="date-popover__nav" data-nav="next" aria-label="下一月">
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+                </button>
+                <button type="button" class="date-popover__nav" data-nav="next-year" aria-label="下一年">»</button>
+              </header>
+              <div class="date-popover__weekdays"><span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span></div>
+              <div class="date-popover__grid"></div>
+              <footer class="date-popover__foot">
+                <button type="button" class="date-popover__btn" data-action="today">今天</button>
+              </footer>
+            </div>
+          </div>
+        </div>
+        <label class="field">
+          <span class="field__label">目标年龄</span>
+          <div class="field__row">
+            <input id="cfg-target-age" type="number" min="20" max="120" value="80">
+            <span class="field__suffix">岁</span>
+          </div>
+        </label>
+        <label class="toggle" for="cfg-show-past">
+          <span class="toggle__head">
+            <span class="toggle__title">显示过去</span>
+            <span class="toggle__hint">关闭：第一格 = 今天 · 打开：从 0 岁开始全寿命方格</span>
+          </span>
+          <input type="checkbox" id="cfg-show-past" role="switch">
+          <span class="toggle__track" aria-hidden="true"><span class="toggle__thumb"></span></span>
+        </label>
+        <label class="toggle" for="cfg-use-assets">
+          <span class="toggle__head">
+            <span class="toggle__title">纳入起始资产</span>
+            <span class="toggle__hint">把记账起始时已有的资产也算成自由的来源</span>
+          </span>
+          <input type="checkbox" id="cfg-use-assets" role="switch">
+          <span class="toggle__track" aria-hidden="true"><span class="toggle__thumb"></span></span>
+        </label>
+        <label class="field" id="cfg-assets-field" hidden>
+          <span class="field__label">记账起始时资产</span>
+          <div class="field__row">
+            <span class="field__prefix">¥</span>
+            <input id="cfg-initial-assets" type="number" inputmode="decimal" min="0" step="100" placeholder="0">
+          </div>
+        </label>
+        <label class="field">
+          <span class="field__label">记账天数（手动覆盖 · 0=自动）</span>
+          <div class="field__row">
+            <input id="cfg-tracking-days" type="number" inputmode="numeric" min="0" step="1" placeholder="0">
+            <span class="field__suffix">天</span>
+          </div>
+        </label>
+        <label class="field">
+          <span class="field__label">日均花销（手动覆盖 · 0=自动）</span>
+          <div class="field__row">
+            <span class="field__prefix">¥</span>
+            <input id="cfg-avg-expense" type="number" inputmode="decimal" min="0" step="1" placeholder="0">
+          </div>
+        </label>
+      </div>
+      <footer class="modal__foot">
+        <button class="btn btn--ghost" id="cfg-cancel">取消</button>
+        <button class="btn btn--primary" id="cfg-save"><span class="btn__text">开始</span></button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- 财富自由达成彩蛋 -->
+  <div class="freedom-banner" id="freedom-banner" hidden aria-live="polite">
+    <div class="freedom-banner__veil"></div>
+    <div class="freedom-banner__ripple"></div>
+    <div class="freedom-banner__ripple"></div>
+    <div class="freedom-banner__ripple"></div>
+    <div class="freedom-banner__ripple"></div>
+    <div class="freedom-banner__ripple"></div>
+    <div class="freedom-banner__inner">
+      <div class="freedom-banner__eyebrow">FINANCIAL FREEDOM ACHIEVED</div>
+      <div class="freedom-banner__word">FREE</div>
+      <div class="freedom-banner__zh">财 富 自 由</div>
+      <div class="freedom-banner__sub">你已点亮人生剩余的所有方格</div>
+    </div>
+  </div>
+
+  <script src="./grid.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>
