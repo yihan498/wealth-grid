@@ -292,7 +292,7 @@
       this.futureCells = future_cells || this.totalCells;
       this.expenseDays = expense_days_equiv || 0;
       this.assetLit = Math.min(asset_lit || 0, this.futureCells);
-      this.incomeLit = Math.min(income_lit || 0, Math.max(0, this.futureCells - this.assetLit - this.expenseDays));
+      this.incomeLit = Math.min(income_lit || 0, Math.max(0, this.futureCells - this.assetLit));
       this.litCount = Math.min(lit_count || 0, this.futureCells);
       this.overflow = overflow || 0;
       this.relayout();
@@ -396,8 +396,7 @@
         const past = this.pastCells;
         for (const [idx, a] of this.animations) {
           if (now - a.t0 >= a.dur) {
-            // 减去 expenseDays 偏移，使 rel 对齐 litCount（= assetLit + incomeLit）
-            const rel = idx - past - this.expenseDays;
+            const rel = idx - past;
             if (a.type === 'ignite')          this.litCount = Math.max(this.litCount, rel + 1);
             else if (a.type === 'extinguish') this.litCount = Math.min(this.litCount, rel);
             this._syncLitSegments();
@@ -435,8 +434,6 @@
       const tracked = this.trackedPastCells;
       const trackedStart = Math.max(0, past - tracked);
       const assetEnd   = past + this.assetLit;
-      const expenseEnd = assetEnd + this.expenseDays;   // 支出消耗区结束
-      const incomeEnd  = expenseEnd + this.incomeLit;   // 净自由区结束
       const animating  = this.animations;
 
       // ① 纯过去（无记账） · idx [0, trackedStart)
@@ -451,20 +448,17 @@
       if (this.assetLit > 0) {
         this._fillRange(ctx, C.asset, past, assetEnd, step, cell, animating);
       }
-      // ④ 支出消耗区 → 熄灭色（与未点亮一致）· idx [assetEnd, expenseEnd)
-      if (this.expenseDays > 0) {
-        this._fillRange(ctx, C.unlit, assetEnd, expenseEnd, step, cell, animating);
-      }
-      // ⑤ 净储蓄自由（金色） · idx [expenseEnd, incomeEnd)
+      // ④ 净储蓄自由（金色）· idx [assetEnd, assetEnd+incomeLit)
+      const incomeLitEnd = assetEnd + this.incomeLit;
       if (this.incomeLit > 0) {
-        this._fillRange(ctx, C.gold, expenseEnd, incomeEnd, step, cell, animating);
+        this._fillRange(ctx, C.gold, assetEnd, incomeLitEnd, step, cell, animating);
       }
-      // ⑥ 未点亮未来 · idx [incomeEnd, total)
-      this._fillRange(ctx, C.unlit, incomeEnd, total, step, cell, animating);
+      // ⑤ 未点亮未来 · idx [incomeLitEnd, total)
+      this._fillRange(ctx, C.unlit, incomeLitEnd, total, step, cell, animating);
 
       // 已点亮 + 支出区域全局柔光（远景）
-      if (incomeEnd > past && this.camera.scale < 2.0) {
-        const last  = this.cellRect(Math.min(incomeEnd - 1, total - 1));
+      if (incomeLitEnd > past && this.camera.scale < 2.0) {
+        const last  = this.cellRect(Math.min(incomeLitEnd - 1, total - 1));
         const first = this.cellRect(past);
         const g = ctx.createLinearGradient(0, first.y, 0, last.y + last.h);
         g.addColorStop(0, 'rgba(255, 209, 102, 0.04)');

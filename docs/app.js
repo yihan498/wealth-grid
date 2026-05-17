@@ -509,9 +509,8 @@
   async function playAnimation(res) {
     const before = res.lit_before ?? 0;
     const after  = res.lit_after  ?? 0;
-    const expOff = state.stats.expense_days_equiv || 0;
-    if (after > before)      await grid.lightUp(before + expOff, after + expOff);
-    else if (after < before) await grid.extinguish(after + expOff, before + expOff);
+    if (after > before)      await grid.lightUp(before, after);
+    else if (after < before) await grid.extinguish(after, before);
     const future = state.stats.future_cells || 0;
     if (future > 0 && after >= future && before < future) await celebrateFreedom();
   }

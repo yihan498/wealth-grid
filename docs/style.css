@@ -1071,13 +1071,28 @@ input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner
    ============================================ */
 @media (max-width: 980px) {
   .layout { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
-  .ledger { max-height: 50vh; border-right: 0; border-bottom: 1px solid var(--line-1); }
+  .ledger {
+    max-height: 62dvh;
+    padding: 18px 20px 16px;
+    gap: 16px;
+    border-right: 0;
+    border-bottom: 1px solid var(--line-1);
+  }
   .stage { padding: 16px; }
   /* 移动端隐藏英文副标题，避免 stage 标题行溢出 */
   .stage__title-en { display: none; }
   .stage__legend { gap: 12px; }
-  /* 进度卡在小屏减少内边距节省空间 */
-  .progress-card { padding: 14px 16px; }
+
+  /* 品牌栏 · 紧凑化 */
+  .brand__mark { width: 30px; height: 30px; }
+  .brand__title { font-size: 16px; }
+  .brand__sub { display: none; }
+
+  /* 进度卡 · 减小英雄数字 + 内边距 */
+  .progress-card { padding: 12px 14px; gap: 8px; }
+  .progress-card__big { font-size: 36px; }
+  .progress-card__big-unit { font-size: 15px; }
+
   /* 最近交易：移动端彻底去掉 flex 弹性，改为块级自然流
      tx-list / tx-list__items 双层 flex:1 在无固定父高时均坍塌为 0；
      改用 display:block 让内容自然撑高，ledger overflow-y:auto 负责外层滚动 */
@@ -1089,7 +1104,7 @@ input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner
     display: flex;
   }
   .tx-list__items {
-    display: flex; /* 保留 flex 列布局 + gap，但取消 flex:1 弹性 */
+    display: flex;
     flex-direction: column;
     height: auto;
     max-height: none;
