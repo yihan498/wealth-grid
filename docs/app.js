@@ -365,7 +365,7 @@
     els.incomeDays.textContent  = fmtInt(s.income_lit || 0);
     els.netSaving.textContent   = fmtCNY(Math.max(0, (s.total_income || 0) - (s.total_expense || 0)));
     els.legendOverflow.hidden = !s.overflow;
-    els.legendExpense.hidden  = !(s.expense_days_equiv > 0);
+    els.legendExpense.hidden  = true; // 支出区改为熄灭色，图例不再单独显示
   }
 
   function renderStats() {
