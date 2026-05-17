@@ -1078,10 +1078,11 @@ input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner
   .stage__legend { gap: 12px; }
   /* 进度卡在小屏减少内边距节省空间 */
   .progress-card { padding: 14px 16px; }
-  /* 最近交易：移动端取消 flex:1 防止 flex-basis:0 让高度归零，
-     限制内部滚动区最大高度确保列表可用 */
+  /* 最近交易：移动端双层 flex:1 问题修复
+     外层 tx-list 取消 flex:1（否则无固定父高度时 flex-basis:0→0px）
+     内层 tx-list__items 同样取消 flex:1，改为 flex:none 自然高度 + max-height 滚动 */
   .tx-list { flex: none; }
-  .tx-list__items { max-height: 200px; }
+  .tx-list__items { flex: none; max-height: 200px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
