@@ -450,10 +450,9 @@ input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner
 }
 
 .date-popover {
-  position: absolute;
-  top: calc(100% + 6px);
-  left: 0;
-  z-index: 50;
+  position: fixed;
+  top: 0; left: 0;       /* JS 覆盖 */
+  z-index: 300;          /* 高于 modal(100) 和 overlay(100) */
   width: 280px;
   padding: 14px;
   background: linear-gradient(180deg, var(--bg-2), var(--bg-3));
@@ -546,8 +545,7 @@ input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner
 }
 .date-popover__btn:hover { color: var(--gold-core); background: var(--gold-faint); }
 
-/* 设置面板里的 date picker · popover 上抛而非下落（避免被 modal 截断） */
-.modal .date-popover { top: auto; bottom: calc(100% + 6px); }
+/* position: fixed 后此覆盖规则不再需要 */
 
 /* Toggle (switch) · 设置面板用 */
 .toggle {
@@ -689,6 +687,7 @@ input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner
 .data-status {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 8px;
   padding: 8px 14px;
   border-radius: var(--r-md);
@@ -861,7 +860,7 @@ input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner
 
 .stage__canvas-wrap {
   position: relative;
-  flex: 1; min-height: 0;
+  flex: 1; min-height: 200px;
   border-radius: var(--r-lg);
   border: 1px solid var(--line-1);
   background:
@@ -951,6 +950,9 @@ input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner
 .modal__body {
   padding: 18px 26px 6px;
   display: flex; flex-direction: column; gap: 14px;
+  max-height: calc(100dvh - 220px);
+  overflow-y: auto;
+  overflow-x: visible;
 }
 .modal__foot {
   padding: 16px 26px 22px;

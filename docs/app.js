@@ -118,7 +118,7 @@
     };
   }
 
-  // ===================== 本地 API shim（接口与原 server 版一致）=====================
+  // ===================== 本地 API shim =====================
   const api = {
     state: () => Promise.resolve((() => {
       const settings = store.getSettings();
@@ -171,7 +171,6 @@
     cfgSave:              $('#cfg-save'),
     cfgCancel:            $('#cfg-cancel'),
     modalTargetAgeDisplay:$('#modal-target-age-display'),
-
     ringPct:              $('#ring-pct'),
     litCount:             $('#lit-count'),
     remainingDays:        $('#remaining-days'),
@@ -182,30 +181,24 @@
     assetAmount:          $('#asset-amount'),
     incomeDays:           $('#income-days'),
     netSaving:            $('#net-saving'),
-
     segBtns:              document.querySelectorAll('.seg__btn'),
     txAmount:             $('#tx-amount'),
     txDate:               $('#tx-date'),
     txNote:               $('#tx-note'),
     btnSubmit:            $('#btn-submit'),
-
     stIncome:             $('#st-income'),
     stExpense:            $('#st-expense'),
     stAvg:                $('#st-avg'),
     stDays:               $('#st-days'),
-
     txList:               $('.tx-list'),
     txItems:              $('#tx-items'),
     txCount:              $('#tx-count'),
-
     legendOverflow:       $('#legend-overflow'),
     legendExpense:        $('#legend-expense'),
     stageFooter:          $('#stage-footer-text'),
     freedomBanner:        $('#freedom-banner'),
-
     canvas:               $('#grid'),
     starfield:            $('#starfield'),
-
     btnExport:            $('#btn-export'),
     btnImport:            $('#btn-import'),
     fileImport:           $('#file-import'),
@@ -223,16 +216,16 @@
     settings: null,
     stats: { total_income: 0, total_expense: 0, tracking_days: 0, avg_daily_expense: 0,
              freedom_days_bought: 0, total_cells: 0, lit_count: 0, overflow: 0,
-             expense_days_equiv: 0, income_days_equiv: 0 },
+             expense_days_equiv: 0 },
     transactions: [],
     txType: 'income',
     busy: false,
   };
 
-  // ===================== DatePicker · 日历选择器 =====================
+  // ===================== DatePicker =====================
   class DatePicker {
     constructor(root) {
-      this.root = root;
+      this.root     = root;
       this.hidden   = root.querySelector('input[type=hidden]');
       this.trigger  = root.querySelector('.date-input__trigger');
       this.valueEl  = root.querySelector('.date-input__value');
@@ -255,6 +248,7 @@
       if (this.value) { const d = this._parse(this.value); this.viewYear = d.getFullYear(); this.viewMonth = d.getMonth(); }
       this._render();
       this.popover.hidden = false;
+      this._positionPopover();
       this.root.classList.add('is-open');
       setTimeout(() => document.addEventListener('pointerdown', this._outside, true), 0);
       document.addEventListener('keydown', this._onEsc);
@@ -265,6 +259,27 @@
       document.removeEventListener('pointerdown', this._outside, true);
       document.removeEventListener('keydown', this._onEsc);
     }
+    _positionPopover() {
+      const rect = this.trigger.getBoundingClientRect();
+      const popW = 280, popH = 340, margin = 8;
+      const vw = window.innerWidth, vh = window.innerHeight;
+      // 水平：左对齐，超出右边界则右对齐
+      let left = rect.left;
+      if (left + popW > vw - margin) left = Math.max(margin, vw - popW - margin);
+      // 垂直：下方空间足够则向下，否则向上
+      const spaceBelow = vh - rect.bottom - margin;
+      const spaceAbove = rect.top - margin;
+      let top;
+      if (spaceBelow >= popH || spaceBelow >= spaceAbove) {
+        top = rect.bottom + 6;
+        this.popover.style.maxHeight = Math.min(popH, spaceBelow) + 'px';
+      } else {
+        top = Math.max(margin, rect.top - popH - 6);
+        this.popover.style.maxHeight = Math.min(popH, spaceAbove) + 'px';
+      }
+      this.popover.style.left = left + 'px';
+      this.popover.style.top  = top  + 'px';
+    }
     _bind() {
       this.trigger.addEventListener('click', () => this.popover.hidden ? this.open() : this.close());
       this.popover.addEventListener('click', (e) => {
@@ -273,8 +288,8 @@
         const day    = e.target.closest('[data-day]');
         if (nav) {
           const dir = nav.dataset.nav;
-          if (dir === 'prev')      { if (--this.viewMonth < 0)  { this.viewMonth = 11; this.viewYear--; } }
-          else if (dir === 'next') { if (++this.viewMonth > 11) { this.viewMonth = 0;  this.viewYear++; } }
+          if (dir === 'prev')           { if (--this.viewMonth < 0)  { this.viewMonth = 11; this.viewYear--; } }
+          else if (dir === 'next')      { if (++this.viewMonth > 11) { this.viewMonth = 0;  this.viewYear++; } }
           else if (dir === 'prev-year') this.viewYear--;
           else if (dir === 'next-year') this.viewYear++;
           this._render();
@@ -285,7 +300,7 @@
           else if (action.dataset.action === 'clear') { this.setValue(''); this.close(); }
         }
       });
-      this._outside = (e) => { if (!this.root.contains(e.target)) this.close(); };
+      this._outside = (e) => { if (!this.root.contains(e.target) && !this.popover.contains(e.target)) this.close(); };
       this._onEsc   = (e) => { if (e.key === 'Escape') this.close(); };
     }
     _sync() {
@@ -315,8 +330,8 @@
         const iso = this._iso(c.d);
         const cls = ['date-day'];
         if (c.other) cls.push('is-other');
-        if (iso === todayStr)  cls.push('is-today');
-        if (iso === valueStr)  cls.push('is-selected');
+        if (iso === todayStr) cls.push('is-today');
+        if (iso === valueStr) cls.push('is-selected');
         return `<button type="button" class="${cls.join(' ')}" data-day="${iso}">${c.day}</button>`;
       }).join('');
     }
@@ -337,15 +352,12 @@
     const s = state.stats;
     const future = s.future_cells || s.total_cells || 1;
     const lit    = s.lit_count || 0;
-    const ratio  = Math.min(lit / future, 1);
-    els.ringPct.textContent = (ratio * 100).toFixed(1);
+    els.ringPct.textContent = (Math.min(lit / future, 1) * 100).toFixed(1);
     els.litCount.textContent = fmtInt(lit);
     els.remainingDays.textContent = fmtInt(Math.max(0, future - lit));
     const denom = (s.future_cells || s.total_cells) || 1;
-    const assetPct  = Math.min(100, (s.asset_lit / denom) * 100);
-    const incomePct = Math.min(100 - assetPct, (s.income_lit / denom) * 100);
-    els.barAsset.style.width  = assetPct.toFixed(2)  + '%';
-    els.barIncome.style.width = incomePct.toFixed(2) + '%';
+    els.barAsset.style.width  = Math.min(100, (s.asset_lit / denom) * 100).toFixed(2) + '%';
+    els.barIncome.style.width = Math.min(100 - (s.asset_lit / denom) * 100, (s.income_lit / denom) * 100).toFixed(2) + '%';
     const showAsset = !!(s.use_initial_assets && s.initial_assets > 0);
     els.rowAsset.hidden = !showAsset;
     els.assetDays.textContent  = fmtInt(s.asset_lit || 0);
@@ -393,14 +405,13 @@
   }
 
   const escHtml = (s) => String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
-
   function renderAll() { renderProgress(); renderStats(); renderTxList(); }
 
   // ===================== 交互编排 =====================
   async function loadAndPaint() {
     const data = await api.state();
-    state.settings    = data.settings;
-    state.stats       = data.stats;
+    state.settings     = data.settings;
+    state.stats        = data.stats;
     state.transactions = data.transactions;
     grid.setData(state.stats);
     renderAll();
@@ -410,9 +421,9 @@
   function showOverlay() {
     els.overlay.hidden = false;
     birthDP.setValue(state.settings?.birth_date || '');
-    els.cfgTargetAge.value    = state.settings?.target_age || 80;
-    els.cfgShowPast.checked   = !!(state.settings?.show_past);
-    els.cfgUseAssets.checked  = !!(state.settings?.use_initial_assets);
+    els.cfgTargetAge.value     = state.settings?.target_age || 80;
+    els.cfgShowPast.checked    = !!(state.settings?.show_past);
+    els.cfgUseAssets.checked   = !!(state.settings?.use_initial_assets);
     els.cfgInitialAssets.value = state.settings?.initial_assets || '';
     els.cfgTrackingDays.value  = state.settings?.tracking_days_override || '';
     els.cfgAvgExpense.value    = state.settings?.avg_daily_expense_override || '';
@@ -433,16 +444,15 @@
   els.cfgSave.addEventListener('click', async () => {
     if (state.busy) return;
     const birth = birthDP.value;
-    const age   = parseInt(els.cfgTargetAge.value, 10) || 80;
     if (!birth) { birthDP.open(); return; }
     state.busy = true;
     try {
       const r = await api.settings({
-        birth_date: birth, target_age: age, currency: 'CNY',
-        show_past:             !!(els.cfgShowPast.checked),
-        use_initial_assets:    !!(els.cfgUseAssets.checked),
-        initial_assets:        parseFloat(els.cfgInitialAssets.value) || 0,
-        tracking_days_override: parseInt(els.cfgTrackingDays.value, 10) || 0,
+        birth_date: birth, target_age: parseInt(els.cfgTargetAge.value, 10) || 80, currency: 'CNY',
+        show_past:                  !!(els.cfgShowPast.checked),
+        use_initial_assets:         !!(els.cfgUseAssets.checked),
+        initial_assets:             parseFloat(els.cfgInitialAssets.value) || 0,
+        tracking_days_override:     parseInt(els.cfgTrackingDays.value, 10) || 0,
         avg_daily_expense_override: parseFloat(els.cfgAvgExpense.value) || 0,
       });
       state.settings = r.settings; state.stats = r.stats;
@@ -450,7 +460,6 @@
     } finally { state.busy = false; }
   });
 
-  // 类型切换
   els.segBtns.forEach(b => {
     b.addEventListener('click', () => {
       els.segBtns.forEach(x => { x.classList.toggle('is-active', x === b); x.setAttribute('aria-selected', x === b ? 'true' : 'false'); });
@@ -460,7 +469,7 @@
   });
 
   txDP.setValue(todayISO());
-  els.txAmount.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); onSubmitTx(); } });
+  els.txAmount.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); onSubmitTx(); } });
   els.btnSubmit.addEventListener('click', onSubmitTx);
 
   async function onSubmitTx() {
@@ -518,10 +527,9 @@
 
   // ===================== 导出 =====================
   els.btnExport.addEventListener('click', () => {
-    const data = store.exportData();
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    const name = `ledger-${todayISO()}.json`;
-    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; a.click();
+    const blob = new Blob([JSON.stringify(store.exportData(), null, 2)], { type: 'application/json' });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+    a.download = `ledger-${todayISO()}.json`; a.click();
     URL.revokeObjectURL(a.href);
     els.dataStatusText.textContent = '备份已导出 ✓';
     setTimeout(() => { els.dataStatusText.textContent = '已保存到本地'; }, 3000);
@@ -533,17 +541,15 @@
     const file = e.target.files?.[0];
     if (!file) return;
     try {
-      const text = await file.text();
-      const data = JSON.parse(text);
+      const data = JSON.parse(await file.text());
       if (!data.transactions && !data.settings) throw new Error('格式不正确');
       if (!confirm(`将导入 ${(data.transactions || []).length} 笔交易，现有数据将被替换，确认吗？`)) return;
       store.importData(data);
       els.dataStatusText.textContent = '导入成功 ✓';
       setTimeout(() => { els.dataStatusText.textContent = '已保存到本地'; }, 3000);
       await loadAndPaint();
-    } catch (err) {
-      alert('导入失败：' + err.message);
-    } finally { els.fileImport.value = ''; }
+    } catch (err) { alert('导入失败：' + err.message); }
+    finally { els.fileImport.value = ''; }
   });
 
   // ===================== 启动 =====================
