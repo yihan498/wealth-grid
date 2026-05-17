@@ -43,7 +43,7 @@
   --ff-serif-cn: 'Noto Serif SC', 'Cormorant Garamond', serif;
   --ff-serif-en: 'Cormorant Garamond', 'Noto Serif SC', serif;
   --ff-sans: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-  --ff-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+  --ff-mono: ui-monospace, SFMono-Regular, 'Consolas', 'Menlo', monospace;
 
   /* motion */
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
@@ -1093,22 +1093,29 @@ input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner
   .progress-card__big { font-size: 36px; }
   .progress-card__big-unit { font-size: 15px; }
 
-  /* 最近交易：移动端彻底去掉 flex 弹性，改为块级自然流
-     tx-list / tx-list__items 双层 flex:1 在无固定父高时均坍塌为 0；
-     改用 display:block 让内容自然撑高，ledger overflow-y:auto 负责外层滚动 */
+  /* 日期+备注：移动端改单列，避免日期文字撑宽 */
+  .field-grid { grid-template-columns: 1fr; }
+
+  /* 最近交易：移动端给 tx-list 固定最大高度 + 内部滚动，
+     使 card 始终完整显示在屏幕内而不被 ledger max-height 截断。
+     tx-list 作为 flex 列容器 + max-height 产生确定高度，
+     内层 tx-list__items 以 flex:1 + overflow-y:auto 承接滚动 */
   .tx-list {
     flex: none;
-    display: block;
+    display: flex;
+    flex-direction: column;
+    max-height: 210px;
   }
   .tx-list__head {
+    flex-shrink: 0;
     display: flex;
   }
   .tx-list__items {
-    display: flex;
-    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
     height: auto;
     max-height: none;
-    overflow-y: visible;
   }
   .tx-list__empty {
     display: none;
