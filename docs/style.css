@@ -1093,32 +1093,6 @@ input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner
   .progress-card__big { font-size: 36px; }
   .progress-card__big-unit { font-size: 15px; }
 
-  /* 日期+备注：移动端改单列，避免日期文字撑宽 */
-  .field-grid { grid-template-columns: 1fr; }
-
-  /* 最近交易：完全脱离 flex 弹性，用 display:block 自然流撑高，
-     tx-list__items 自身 max-height + overflow-y:auto 独立滚动，
-     不依赖父容器有确定高度，彻底绕开 flex:1 坍塌问题 */
-  .tx-list {
-    flex: none;
-    display: block;
-  }
-  .tx-list__head {
-    display: flex;
-  }
-  .tx-list__items {
-    display: block;
-    max-height: 160px;
-    overflow-y: auto;
-  }
-  .tx-item { margin-bottom: 4px; }
-  .tx-list__empty {
-    display: none;
-  }
-  .tx-list.is-empty .tx-list__empty {
-    display: flex;
-    flex-direction: column;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
