@@ -430,6 +430,10 @@
       if (!total) return;
       const cell = this.cellSize;
       const step = cell + this.gap;
+
+      // 先用纯黑填满方格区域，作为所有格子共用的黑色边框底色
+      ctx.fillStyle = '#000000';
+      ctx.fillRect(this.grid.x, this.grid.y, this.grid.w, this.grid.h);
       const past = this.pastCells;
       const tracked = this.trackedPastCells;
       const trackedStart = Math.max(0, past - tracked);
@@ -506,9 +510,9 @@
       ctx.fillRect(cx - haloR, cy - haloR, haloR * 2, haloR * 2);
       ctx.globalCompositeOperation = 'source-over';
 
-      // 中心格本体 · 内缩 1px 保持边框 · goldBloom 强标识
+      // 中心格本体 · 内缩 1px 保持边框 · goldBloom 强标识 · 不涨破边框
       const inner = Math.max(1, r.w - 2 * inset);
-      const s = 1 + breath * 0.10;
+      const s = 1.0; // 不缩放，保持在边框内
       const w = inner * s, h = inner * s;
       ctx.fillStyle = C.goldBloom;
       ctx.fillRect(cx - w / 2, cy - h / 2, w, h);
