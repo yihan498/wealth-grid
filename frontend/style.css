@@ -1027,6 +1027,16 @@ input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner
   padding: 16px 26px 22px;
   display: flex; justify-content: flex-end; gap: 10px;
 }
+.modal-divider {
+  font-size: 10.5px; font-weight: 600; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--text-3);
+  border-top: 1px solid var(--line-1);
+  padding-top: 14px; margin-top: 2px;
+}
+.field-hint {
+  font-size: 11px; color: var(--text-3); line-height: 1.6;
+  margin-top: -6px;
+}
 
 /* ============================================
    Freedom Banner (彩蛋) · 多层波纹 + 中央光辉 + 子标题

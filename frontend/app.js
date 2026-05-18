@@ -142,6 +142,99 @@
     },
   };
 
+  // ===================== 飞书多维表格同步 =====================
+  const feishuSync = (() => {
+    const CFG_KEY = 'wg_feishu';
+
+    function getCfg() { try { return JSON.parse(localStorage.getItem(CFG_KEY)) || {}; } catch { return {}; } }
+    function saveCfg(c) { localStorage.setItem(CFG_KEY, JSON.stringify(c)); }
+
+    function parseUrl(url) {
+      try {
+        const u = new URL(url.trim());
+        const parts = u.pathname.split('/');
+        const bi = parts.lastIndexOf('base');
+        return { app_token: bi >= 0 ? parts[bi + 1]?.split('?')[0] : null, table_id: u.searchParams.get('table') };
+      } catch { return {}; }
+    }
+
+    async function getToken(appId, appSecret) {
+      const r = await fetch('https://open.feishu.cn/open-apis/auth/v3/tenant_access_token/internal', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ app_id: appId, app_secret: appSecret }),
+      });
+      const d = await r.json();
+      if (d.code !== 0) throw new Error('飞书认证失败：' + (d.msg || d.code));
+      return d.tenant_access_token;
+    }
+
+    async function fetchAll(token, appToken, tableId) {
+      const all = []; let page = '';
+      do {
+        const qs = new URLSearchParams({ page_size: '100' });
+        if (page) qs.set('page_token', page);
+        const r = await fetch(
+          `https://open.feishu.cn/open-apis/bitable/v1/apps/${appToken}/tables/${tableId}/records?${qs}`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        const d = await r.json();
+        if (d.code !== 0) throw new Error('读取表格失败：' + (d.msg || d.code));
+        all.push(...(d.data?.items || []));
+        page = d.data?.has_more ? d.data.page_token : '';
+      } while (page);
+      return all;
+    }
+
+    function parseField(v) {
+      if (v === null || v === undefined) return null;
+      if (typeof v === 'number') return v;
+      if (typeof v === 'string') return v;
+      if (Array.isArray(v)) return v.map(x => x.text || '').join('');
+      return String(v);
+    }
+
+    return {
+      getCfg, saveCfg,
+      loadIntoForm(els) {
+        const c = getCfg();
+        if (els.fsUrl)       els.fsUrl.value       = c.url       || '';
+        if (els.fsAppId)     els.fsAppId.value     = c.app_id    || '';
+        if (els.fsAppSecret) els.fsAppSecret.value = c.app_secret || '';
+      },
+      saveFromForm(els) {
+        const url = els.fsUrl?.value.trim() || '';
+        const { app_token, table_id } = parseUrl(url);
+        const c = getCfg();
+        saveCfg({ ...c, url, app_token, table_id, app_id: els.fsAppId?.value.trim() || '', app_secret: els.fsAppSecret?.value.trim() || '' });
+      },
+      async sync() {
+        const c = getCfg();
+        if (!c.app_id || !c.app_secret || !c.app_token || !c.table_id)
+          throw new Error('请先在设置中填写飞书表格地址、App ID 和 App Secret');
+        const token  = await getToken(c.app_id, c.app_secret);
+        const records = await fetchAll(token, c.app_token, c.table_id);
+        const synced  = new Set(c.synced_ids || []);
+        const newTxs  = [];
+        for (const rec of records) {
+          if (synced.has(rec.record_id)) continue;
+          const f      = rec.fields;
+          const amount = parseFloat(parseField(f['金额']));
+          if (!(amount > 0)) continue;
+          let occurred_on = todayISO();
+          const dv = f['日期'];
+          if (typeof dv === 'number') occurred_on = _iso(new Date(dv));
+          else if (typeof dv === 'string' && /^\d{4}-\d{2}-\d{2}/.test(dv)) occurred_on = dv.slice(0, 10);
+          const cat  = parseField(f['类别']) || '';
+          const note = parseField(f['备注']) || '';
+          newTxs.push({ type: 'expense', amount, occurred_on, note: [cat, note].filter(Boolean).join(' · ') });
+          synced.add(rec.record_id);
+        }
+        saveCfg({ ...c, synced_ids: [...synced] });
+        return newTxs;
+      },
+    };
+  })();
+
   // ===================== 核心计算（对应 Python backend compute_stats）=====================
   function computeStats(settings, transactions) {
     let totalIncome = 0, totalExpense = 0, firstStr = null, lastStr = null;
@@ -296,6 +389,10 @@
     fileLinkDot:          $('#file-link-dot'),
     fileLinkName:         $('#file-link-name'),
     btnFileLink:          $('#btn-file-link'),
+    btnFeishuSync:        $('#btn-feishu-sync'),
+    fsUrl:                $('#fs-url'),
+    fsAppId:              $('#fs-app-id'),
+    fsAppSecret:          $('#fs-app-secret'),
   };
 
   // ===================== 引擎 =====================
@@ -526,6 +623,7 @@
     els.cfgAvgExpense.value    = state.settings?.avg_daily_expense_override || '';
     els.cfgAssetsField.hidden  = !els.cfgUseAssets.checked;
     els.modalTargetAgeDisplay.textContent = els.cfgTargetAge.value;
+    feishuSync.loadIntoForm(els);
     setTimeout(() => birthDP.trigger.focus(), 80);
   }
   function hideOverlay() { els.overlay.hidden = true; }
@@ -557,6 +655,7 @@
         avg_daily_expense_override: parseFloat(els.cfgAvgExpense.value) || 0,
       });
       state.settings = r.settings; state.stats = r.stats;
+      feishuSync.saveFromForm(els);
       grid.setData(state.stats); renderAll(); hideOverlay();
     } finally { state.busy = false; }
   });
@@ -650,6 +749,43 @@
       await loadAndPaint();
     } catch (err) { alert('导入失败：' + err.message); }
     finally { els.fileImport.value = ''; }
+  });
+
+  // ===================== 飞书同步按钮 =====================
+  els.btnFeishuSync.addEventListener('click', async () => {
+    if (state.busy) return;
+    const btn = els.btnFeishuSync;
+    const origText = btn.textContent;
+    btn.textContent = '同步中…'; btn.disabled = true; state.busy = true;
+    try {
+      const newTxs = await feishuSync.sync();
+      if (newTxs.length === 0) {
+        els.dataStatusText.textContent = '没有新记录';
+        setTimeout(() => { els.dataStatusText.textContent = fileStore.connected ? '已连接本地文件' : '已保存到本地'; }, 2500);
+        return;
+      }
+      // Batch import
+      const litBefore = computeStats(store.getSettings(), store.getTxs()).lit_count;
+      for (const tx of newTxs) store.addTx(tx);
+      const txsAfter   = store.getTxs();
+      const statsAfter = computeStats(store.getSettings(), txsAfter);
+      state.stats        = statsAfter;
+      state.transactions = [...txsAfter].sort((a, b) => b.occurred_on.localeCompare(a.occurred_on) || b.id - a.id).slice(0, 50);
+      renderStats(); renderTxList(true);
+      grid.setData(statsAfter);
+      const litAfter = statsAfter.lit_count;
+      if (litAfter > litBefore)      await grid.lightUp(litBefore, litAfter);
+      else if (litAfter < litBefore) await grid.extinguish(litAfter, litBefore);
+      renderProgress();
+      els.dataStatusText.textContent = `飞书同步完成，导入 ${newTxs.length} 笔`;
+      setTimeout(() => { els.dataStatusText.textContent = fileStore.connected ? '已连接本地文件' : '已保存到本地'; }, 3000);
+    } catch (err) {
+      console.error(err);
+      els.dataStatusText.textContent = '同步失败：' + err.message;
+      setTimeout(() => { els.dataStatusText.textContent = fileStore.connected ? '已连接本地文件' : '已保存到本地'; }, 4000);
+    } finally {
+      btn.textContent = origText; btn.disabled = false; state.busy = false;
+    }
   });
 
   // ===================== 本地文件直连 UI =====================

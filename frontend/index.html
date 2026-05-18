@@ -157,6 +157,7 @@
           <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22a10 10 0 1 1 0-20 10 10 0 0 1 0 20z"/><path d="M9 12l2 2 4-4"/></svg>
         </span>
         <span class="data-status__text" id="data-status-text">已保存到本地</span>
+        <button class="data-status__export" id="btn-feishu-sync" title="从飞书多维表格同步支出记录">飞书同步</button>
         <button class="data-status__export" id="btn-export" title="导出 JSON 备份">导出</button>
         <button class="data-status__export" id="btn-import" title="从 JSON 备份恢复数据">导入</button>
         <input type="file" id="file-import" accept=".json" style="display:none">
@@ -269,6 +270,23 @@
             <input id="cfg-avg-expense" type="number" inputmode="decimal" min="0" step="1" placeholder="0">
           </div>
         </label>
+
+        <div class="modal-divider">飞书多维表格同步</div>
+        <label class="field">
+          <span class="field__label">表格地址（粘贴飞书多维表格的完整 URL）</span>
+          <input id="fs-url" type="text" placeholder="https://xxxx.feishu.cn/base/..." autocomplete="off" spellcheck="false">
+        </label>
+        <div class="field-grid">
+          <label class="field">
+            <span class="field__label">App ID</span>
+            <input id="fs-app-id" type="text" placeholder="cli_xxxxxxxxxxxx" autocomplete="off">
+          </label>
+          <label class="field">
+            <span class="field__label">App Secret</span>
+            <input id="fs-app-secret" type="password" placeholder="••••••••••••••••" autocomplete="off">
+          </label>
+        </div>
+        <p class="field-hint">需要在飞书开发者后台创建自建应用并开启多维表格权限，<br>表格字段须包含：日期、类别（单选）、金额（数字）、备注（文本）</p>
       </div>
       <footer class="modal__foot">
         <button class="btn btn--ghost" id="cfg-cancel">取消</button>
