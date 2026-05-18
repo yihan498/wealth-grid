@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>财富自由指南灯 · 让每一笔收入点亮一颗人生星辰</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+/* ══ TOKENS ══════════════════════════════════════════════════════════════ */
+:root {
+  --bg:         #08080d;
+  --bg2:        #0d0d14;
+  --surface:    #111118;
+  --surface2:   #16161f;
+  --border:     #1e1e2e;
+  --border2:    #252538;
+  --text:       #e8e0d0;
+  --text2:      #8890a8;
+  --text3:      #44485e;
+  --gold:       #ffd166;
+  --gold2:      #e8b84b;
+  --gold3:      #c49a30;
+  --gold-dim:   rgba(255,209,102,0.12);
+  --gold-glow:  rgba(255,209,102,0.06);
+  --unlit:      #2a2a3a;
+  --radius:     8px;
+  --radius-lg:  16px;
+  --font-d:     'Cormorant Garamond', Georgia, serif;
+  --font-ui:    'DM Sans', system-ui, sans-serif;
+  --font-mono:  'JetBrains Mono', monospace;
+}
+
+/* ══ RESET ══════════════════════════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; font-size: 15px; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-ui);
+  line-height: 1.65;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+a { text-decoration: none; color: inherit; }
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+/* ══ NAV ════════════════════════════════════════════════════════════════ */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  background: rgba(8,8,13,0.88);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 2.5rem; height: 58px;
+}
+.nav-brand {
+  font-family: var(--font-d);
+  font-size: 1.25rem; font-weight: 600; letter-spacing: 0.02em;
+  color: var(--text);
+  display: flex; align-items: center; gap: 0.6rem;
+}
+.nav-brand .dot { color: var(--gold); }
+.nav-links { display: flex; align-items: center; gap: 2rem; }
+.nav-links a {
+  font-size: 0.875rem; font-weight: 400; color: var(--text2);
+  transition: color 0.2s;
+}
+.nav-links a:hover { color: var(--text); }
+.nav-cta {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  background: var(--gold); color: #08080d;
+  font-weight: 600; font-size: 0.875rem;
+  padding: 0.45rem 1.1rem; border-radius: 6px;
+  transition: opacity 0.2s;
+}
+.nav-cta:hover { opacity: 0.85; }
+
+/* ══ HERO ════════════════════════════════════════════════════════════════ */
+#hero {
+  min-height: 100vh; display: flex; flex-direction: column;
+  justify-content: center; align-items: center;
+  padding: 80px 2.5rem 60px;
+  position: relative; overflow: hidden;
+  text-align: center;
+}
+#hero::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+  background:
+    radial-gradient(ellipse 60% 50% at 50% 20%, rgba(255,209,102,0.07) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 30% at 50% 80%, rgba(255,209,102,0.03) 0%, transparent 60%);
+  pointer-events: none;
+}
+.hero-eyebrow {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.15em;
+  color: var(--gold); text-transform: uppercase;
+  border: 1px solid rgba(255,209,102,0.25); border-radius: 100px;
+  padding: 0.35rem 1rem; margin-bottom: 2rem;
+}
+.hero-eyebrow::before {
+  content: '';
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--gold);
+  animation: pulse 2.4s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(1.5); }
+}
+.hero-title {
+  font-family: var(--font-d);
+  font-size: clamp(2.8rem, 7vw, 5.5rem);
+  font-weight: 300; line-height: 1.1; letter-spacing: -0.01em;
+  margin-bottom: 1rem; max-width: 800px;
+}
+.hero-title em { color: var(--gold); font-style: italic; }
+.hero-subtitle {
+  font-size: clamp(1rem, 2vw, 1.2rem);
+  color: var(--text2); font-weight: 300;
+  max-width: 560px; margin: 0 auto 2.5rem; line-height: 1.7;
+}
+.hero-ctas {
+  display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;
+  margin-bottom: 4rem;
+}
+.cta-primary {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  background: var(--gold); color: #08080d;
+  font-weight: 600; font-size: 0.95rem;
+  padding: 0.9rem 2rem; border-radius: var(--radius);
+  transition: all 0.25s;
+}
+.cta-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(255,209,102,0.3); }
+.cta-secondary {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  border: 1px solid var(--border2); color: var(--text2);
+  font-size: 0.95rem; padding: 0.9rem 2rem; border-radius: var(--radius);
+  transition: all 0.25s;
+}
+.cta-secondary:hover { border-color: var(--gold3); color: var(--text); }
+
+/* Mini Grid Demo */
+.hero-grid-demo {
+  width: 100%; max-width: 680px; margin: 0 auto;
+  position: relative;
+}
+canvas#demo-canvas {
+  display: block;
+  width: 100%;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+}
+.grid-caption {
+  margin-top: 1rem;
+  font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.08em;
+  color: var(--text3); text-transform: uppercase;
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 0 2px;
+}
+.grid-legend {
+  display: flex; gap: 1rem; align-items: center;
+}
+.legend-item {
+  display: flex; align-items: center; gap: 0.35rem;
+  font-size: 0.68rem;
+}
+.legend-dot {
+  width: 8px; height: 8px; border-radius: 2px;
+  border: 1px solid var(--border2);
+}
+.legend-dot.lit { background: var(--gold); border-color: var(--gold2); }
+.legend-dot.unlit { background: var(--unlit); }
+
+/* ══ SECTION COMMON ══════════════════════════════════════════════════════ */
+section { padding: 100px 2.5rem; position: relative; }
+.container { max-width: 1080px; margin: 0 auto; }
+.sec-tag {
+  font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.18em;
+  color: var(--gold); text-transform: uppercase; display: block;
+  margin-bottom: 0.9rem;
+}
+.sec-title {
+  font-family: var(--font-d);
+  font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+  font-weight: 400; line-height: 1.15; margin-bottom: 0.9rem;
+}
+.sec-desc {
+  color: var(--text2); max-width: 580px; font-weight: 300; font-size: 1rem;
+}
+.sec-header { margin-bottom: 4rem; }
+.sec-header.centered { text-align: center; }
+.sec-header.centered .sec-desc { margin: 0 auto; }
+.divider { height: 1px; background: linear-gradient(90deg, transparent, var(--border2), transparent); margin: 0; }
+
+/* ══ WHY SECTION ═════════════════════════════════════════════════════════ */
+#why { background: var(--bg2); }
+.why-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem; margin-top: 0.5rem;
+}
+.why-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 2rem 1.75rem;
+  position: relative; overflow: hidden;
+  transition: border-color 0.3s, transform 0.3s;
+}
+.why-card:hover { transform: translateY(-3px); border-color: var(--border2); }
+.why-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+}
+.why-card.w1::before { background: linear-gradient(90deg, var(--gold), transparent); }
+.why-card.w2::before { background: linear-gradient(90deg, var(--gold3), transparent); }
+.why-card.w3::before { background: linear-gradient(90deg, var(--gold2), transparent); }
+.why-num {
+  font-family: var(--font-mono); font-size: 2.2rem; font-weight: 300;
+  color: var(--text3); line-height: 1; margin-bottom: 1rem;
+}
+.why-title { font-size: 1.05rem; font-weight: 600; margin-bottom: 0.6rem; }
+.why-desc { font-size: 0.875rem; color: var(--text2); line-height: 1.7; font-weight: 300; }
+.why-answer {
+  display: inline-block; margin-top: 1rem;
+  font-family: var(--font-mono); font-size: 0.72rem;
+  color: #08080d; background: var(--gold);
+  padding: 0.3rem 0.75rem; border-radius: 4px; font-weight: 500;
+}
+
+/* ══ HOW IT WORKS ════════════════════════════════════════════════════════ */
+#how { background: var(--bg); }
+.how-steps {
+  display: grid; grid-template-columns: 1fr 1fr 1fr;
+  gap: 0; position: relative;
+}
+.how-steps::before {
+  content: '';
+  position: absolute; top: 60px; left: calc(16.6% + 32px); right: calc(16.6% + 32px);
+  height: 1px;
+  background: linear-gradient(90deg, var(--gold3), var(--gold), var(--gold3));
+  opacity: 0.3;
+  pointer-events: none;
+}
+.how-step { padding: 0 2rem; text-align: center; }
+.how-step-num {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 64px; height: 64px;
+  border-radius: 50%;
+  border: 1px solid var(--border2);
+  background: var(--surface);
+  font-family: var(--font-d); font-size: 2rem; font-weight: 300;
+  color: var(--gold);
+  margin: 0 auto 1.5rem;
+  position: relative; z-index: 1;
+}
+.how-step-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 0.75rem; }
+.how-step-desc { font-size: 0.875rem; color: var(--text2); line-height: 1.7; font-weight: 300; }
+.how-step-detail {
+  margin-top: 0.75rem; font-family: var(--font-mono); font-size: 0.7rem;
+  color: var(--text3); letter-spacing: 0.05em;
+}
+
+/* ══ FEATURES ════════════════════════════════════════════════════════════ */
+#features { background: var(--bg2); }
+.features-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+}
+.feature-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 2rem;
+  display: flex; gap: 1.25rem; align-items: flex-start;
+  transition: border-color 0.3s, transform 0.3s;
+}
+.feature-card:hover { border-color: var(--border2); transform: translateY(-2px); }
+.feature-icon {
+  flex-shrink: 0; width: 44px; height: 44px;
+  background: var(--gold-dim); border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.3rem;
+}
+.feature-body {}
+.feature-title { font-size: 1rem; font-weight: 600; margin-bottom: 0.5rem; }
+.feature-desc { font-size: 0.875rem; color: var(--text2); line-height: 1.7; font-weight: 300; }
+
+/* ══ MATH MODEL ══════════════════════════════════════════════════════════ */
+#math { background: var(--bg); }
+.math-layout {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 4rem; align-items: center;
+}
+.math-formula-block {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 2rem;
+  font-family: var(--font-mono);
+}
+.math-formula-title {
+  font-size: 0.68rem; letter-spacing: 0.15em; color: var(--text3);
+  text-transform: uppercase; margin-bottom: 1.25rem;
+}
+.math-line {
+  font-size: 0.82rem; color: var(--text2); margin-bottom: 0.5rem;
+  line-height: 1.5;
+}
+.math-line .var { color: var(--gold2); }
+.math-line .op { color: var(--text3); }
+.math-line.result {
+  margin-top: 1.25rem; padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.9rem; color: var(--gold);
+}
+.math-callouts { display: flex; flex-direction: column; gap: 1.5rem; }
+.math-callout {
+  display: flex; gap: 1rem; align-items: flex-start;
+}
+.math-callout-marker {
+  flex-shrink: 0; width: 32px; height: 32px;
+  border-radius: 50%; background: var(--gold-dim);
+  border: 1px solid rgba(255,209,102,0.2);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-mono); font-size: 0.72rem; color: var(--gold);
+  font-weight: 500; margin-top: 2px;
+}
+.math-callout-text h4 { font-size: 0.95rem; font-weight: 600; margin-bottom: 0.35rem; }
+.math-callout-text p { font-size: 0.85rem; color: var(--text2); line-height: 1.65; font-weight: 300; }
+
+/* ══ ANIMATION SECTION ═══════════════════════════════════════════════════ */
+#animation { background: var(--bg2); }
+.anim-cards {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem;
+}
+.anim-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 2rem 1.75rem;
+  text-align: center;
+  transition: border-color 0.3s;
+}
+.anim-card:hover { border-color: rgba(255,209,102,0.2); }
+.anim-symbol {
+  font-size: 2.5rem; margin-bottom: 1rem;
+  display: block;
+}
+.anim-title { font-size: 1rem; font-weight: 600; margin-bottom: 0.6rem; }
+.anim-desc { font-size: 0.875rem; color: var(--text2); line-height: 1.7; font-weight: 300; }
+
+/* ══ PRIVACY SECTION ══════════════════════════════════════════════════════ */
+#privacy { background: var(--bg); }
+.privacy-layout {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center;
+}
+.privacy-points { display: flex; flex-direction: column; gap: 1.25rem; }
+.privacy-point {
+  display: flex; gap: 1rem; align-items: flex-start;
+}
+.privacy-check {
+  flex-shrink: 0; width: 22px; height: 22px;
+  border-radius: 50%; background: var(--gold-dim);
+  border: 1px solid rgba(255,209,102,0.3);
+  display: flex; align-items: center; justify-content: center;
+  margin-top: 1px;
+}
+.privacy-check svg { width: 12px; height: 12px; color: var(--gold); }
+.privacy-point-text h4 { font-size: 0.95rem; font-weight: 600; margin-bottom: 0.2rem; }
+.privacy-point-text p { font-size: 0.85rem; color: var(--text2); font-weight: 300; }
+.privacy-visual {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 2rem;
+}
+.privacy-tag {
+  font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.12em;
+  color: var(--text3); text-transform: uppercase; margin-bottom: 1rem;
+}
+.storage-bar {
+  height: 6px; background: var(--border); border-radius: 3px;
+  overflow: hidden; margin-bottom: 0.5rem;
+}
+.storage-bar-fill {
+  height: 100%; border-radius: 3px; background: var(--gold);
+  width: 0%; animation: barfill 2s ease-out 0.5s forwards;
+}
+@keyframes barfill { to { width: 72%; } }
+.storage-label {
+  display: flex; justify-content: space-between;
+  font-family: var(--font-mono); font-size: 0.7rem; color: var(--text3);
+  margin-bottom: 2rem;
+}
+.storage-note {
+  font-size: 0.8rem; color: var(--text2);
+  padding: 0.75rem 1rem;
+  background: var(--bg); border-radius: var(--radius);
+  border: 1px solid var(--border);
+  font-weight: 300;
+}
+
+/* ══ CTA FINAL ═══════════════════════════════════════════════════════════ */
+#final-cta {
+  background: var(--bg2); text-align: center; padding: 120px 2.5rem;
+  position: relative; overflow: hidden;
+}
+#final-cta::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+  background: radial-gradient(ellipse 70% 60% at 50% 50%, rgba(255,209,102,0.06) 0%, transparent 70%);
+  pointer-events: none;
+}
+.final-label {
+  font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.2em;
+  color: var(--gold3); text-transform: uppercase; margin-bottom: 1.5rem;
+}
+.final-title {
+  font-family: var(--font-d);
+  font-size: clamp(2.2rem, 5vw, 4rem);
+  font-weight: 300; line-height: 1.15; margin-bottom: 1.25rem;
+}
+.final-title em { color: var(--gold); font-style: italic; }
+.final-desc {
+  color: var(--text2); max-width: 480px; margin: 0 auto 2.5rem;
+  font-weight: 300; font-size: 1rem;
+}
+.final-ctas { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+.final-note {
+  margin-top: 2rem; font-family: var(--font-mono); font-size: 0.68rem;
+  letter-spacing: 0.08em; color: var(--text3); text-transform: uppercase;
+}
+
+/* ══ FOOTER ═══════════════════════════════════════════════════════════════ */
+footer {
+  background: var(--bg); border-top: 1px solid var(--border);
+  padding: 2rem 2.5rem; text-align: center;
+}
+.footer-inner {
+  max-width: 1080px; margin: 0 auto;
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 1rem;
+}
+.footer-brand {
+  font-family: var(--font-d); font-size: 1rem; color: var(--text3);
+}
+.footer-meta {
+  font-family: var(--font-mono); font-size: 0.68rem;
+  color: var(--text3); letter-spacing: 0.08em;
+}
+.footer-link { color: var(--text3); transition: color 0.2s; }
+.footer-link:hover { color: var(--gold); }
+
+/* ══ RESPONSIVE ══════════════════════════════════════════════════════════ */
+@media (max-width: 860px) {
+  .why-grid { grid-template-columns: 1fr; }
+  .how-steps { grid-template-columns: 1fr; gap: 2.5rem; }
+  .how-steps::before { display: none; }
+  .features-grid { grid-template-columns: 1fr; }
+  .math-layout { grid-template-columns: 1fr; gap: 2rem; }
+  .anim-cards { grid-template-columns: 1fr; }
+  .privacy-layout { grid-template-columns: 1fr; gap: 2rem; }
+  .footer-inner { flex-direction: column; text-align: center; }
+  .nav-links { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#hero" class="nav-brand">财富自由指南灯<span class="dot"> ·</span></a>
+  <div class="nav-links">
+    <a href="#why">理念</a>
+    <a href="#how">使用方法</a>
+    <a href="#features">功能</a>
+    <a href="#math">模型</a>
+    <a href="#privacy">隐私</a>
+  </div>
+  <a href="https://wealth-grid.tyihan.com" class="nav-cta" target="_blank">开始使用 →</a>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-eyebrow">财富自由可视化工具</div>
+  <h1 class="hero-title">每一笔收入<br>点亮一颗<em>人生星辰</em></h1>
+  <p class="hero-subtitle">把财富自由从一个抽象的数字目标，变成一张你可以看到、感受到的人生方格图。</p>
+  <div class="hero-ctas">
+    <a href="https://wealth-grid.tyihan.com" class="cta-primary" target="_blank">
+      立即体验
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </a>
+    <a href="#how" class="cta-secondary">了解原理 ↓</a>
+  </div>
+  <div class="hero-grid-demo">
+    <canvas id="demo-canvas" width="680" height="160"></canvas>
+    <div class="grid-caption">
+      <span>人生方格图 · 每格代表一天</span>
+      <div class="grid-legend">
+        <div class="legend-item"><div class="legend-dot lit"></div><span>已买到的自由日</span></div>
+        <div class="legend-item"><div class="legend-dot unlit"></div><span>还在路上</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- WHY -->
+<section id="why">
+  <div class="container">
+    <div class="sec-header">
+      <span class="sec-tag">核心理念</span>
+      <h2 class="sec-title">记账，不只是记一个数字</h2>
+      <p class="sec-desc">传统记账只告诉你花了多少、赚了多少。这里，我们回答一个更本质的问题。</p>
+    </div>
+    <div class="why-grid">
+      <div class="why-card w1">
+        <div class="why-num">01</div>
+        <h3 class="why-title">你的财富能支撑你活多少天？</h3>
+        <p class="why-desc">不是"账户余额多少"，而是按照你目前的生活开支，你的净储蓄可以让你自由地活多少天。这才是财富自由的真实进度。</p>
+        <span class="why-answer">自由天数 = 净储蓄 ÷ 日均花销</span>
+      </div>
+      <div class="why-card w2">
+        <div class="why-num">02</div>
+        <h3 class="why-title">每笔收入都是在买时间</h3>
+        <p class="why-desc">当你录入一笔收入，系统会立即告诉你：这笔钱买到了你多少天的自由。不是抽象的数字，而是你能"看到"的方格。</p>
+        <span class="why-answer">收入 → 点亮 N 个方格</span>
+      </div>
+      <div class="why-card w3">
+        <div class="why-num">03</div>
+        <h3 class="why-title">每笔支出都是在消耗未来</h3>
+        <p class="why-desc">支出会抬高你的日均花销，让每一元储蓄换得的自由天数变少。你会清楚地看到方格在减少——花钱的感受完全不同了。</p>
+        <span class="why-answer">支出 → 熄灭 M 个方格</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- HOW IT WORKS -->
+<section id="how">
+  <div class="container">
+    <div class="sec-header centered">
+      <span class="sec-tag">三步开始</span>
+      <h2 class="sec-title">从开始到点亮第一格</h2>
+    </div>
+    <div class="how-steps">
+      <div class="how-step">
+        <div class="how-step-num">一</div>
+        <h3 class="how-step-title">设置生日与目标年龄</h3>
+        <p class="how-step-desc">告诉我们你的生日和希望达到财富自由的目标年龄（默认80岁），系统生成你专属的人生方格图——每格代表剩余人生中的一天。</p>
+        <p class="how-step-detail">默认目标年龄 · 80 岁</p>
+      </div>
+      <div class="how-step">
+        <div class="how-step-num">二</div>
+        <h3 class="how-step-title">记录你的收入与支出</h3>
+        <p class="how-step-desc">填写金额，选择类型，提交。系统会自动计算你的日均花销和净储蓄，换算成你买到的自由天数。</p>
+        <p class="how-step-detail">支持记账天数自由设定</p>
+      </div>
+      <div class="how-step">
+        <div class="how-step-num">三</div>
+        <h3 class="how-step-title">看着方格一颗一颗点亮</h3>
+        <p class="how-step-desc">每一笔收入都会触发仪式动画，镜头缩放到对应位置，方格从黑暗中亮起，金光扩散，然后稳定呼吸。这一刻，你知道自己在变得更自由。</p>
+        <p class="how-step-detail">收入点亮 · 支出熄灭 · 有仪式感</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- FEATURES -->
+<section id="features">
+  <div class="container">
+    <div class="sec-header">
+      <span class="sec-tag">功能亮点</span>
+      <h2 class="sec-title">不只是一个记账工具</h2>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">✦</div>
+        <div class="feature-body">
+          <h3 class="feature-title">Canvas 方格引擎</h3>
+          <p class="feature-desc">高性能 Canvas 渲染，流畅展示两万格以上的人生方格图。自适应屏幕宽度，支持高 DPI 显示，不卡顿，不失真。</p>
+        </div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">⟳</div>
+        <div class="feature-body">
+          <h3 class="feature-title">点亮 / 熄灭仪式动画</h3>
+          <p class="feature-desc">每次记账都是一个仪式：镜头缩放定位，方格逐格点亮，金色光晕扩散，呼吸灯稳定。失去时，灰烬色渐暗，感受不同于获得。</p>
+        </div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">◎</div>
+        <div class="feature-body">
+          <h3 class="feature-title">今日呼吸灯</h3>
+          <p class="feature-desc">代表"今天"的方格始终在轻微呼吸，提醒你这一天正在流逝。时间是真实的，财富自由进度也是。</p>
+        </div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">✧</div>
+        <div class="feature-body">
+          <h3 class="feature-title">财富自由达成彩蛋</h3>
+          <p class="feature-desc">当你的自由天数填满所有剩余格，全局烟花连锁波纹炸开，"FREE"字样浮现。只会触发一次。值得期待。</p>
+        </div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">⇅</div>
+        <div class="feature-body">
+          <h3 class="feature-title">导入 / 导出</h3>
+          <p class="feature-desc">一键导出全部数据为 JSON 文件，在新设备导入即可恢复。数据永远属于你，不依赖任何云服务。</p>
+        </div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">≡</div>
+        <div class="feature-body">
+          <h3 class="feature-title">最近交易折叠面板</h3>
+          <p class="feature-desc">新增交易后自动展开最近记录，可随时折叠。支持单条删除，删除同样触发反向动画，帮你感受每笔决策的重量。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- MATH MODEL -->
+<section id="math">
+  <div class="container">
+    <div class="math-layout">
+      <div>
+        <span class="sec-tag">数学模型</span>
+        <h2 class="sec-title">一个公式，把财富翻译成时间</h2>
+        <div class="math-callouts">
+          <div class="math-callout">
+            <div class="math-callout-marker">A</div>
+            <div class="math-callout-text">
+              <h4>日均花销基于真实行为</h4>
+              <p>用你从开始记账起的所有支出除以记账天数，而不是你主观估计的"每天花多少"。越长期记账，这个数字越真实。</p>
+            </div>
+          </div>
+          <div class="math-callout">
+            <div class="math-callout-marker">B</div>
+            <div class="math-callout-text">
+              <h4>净储蓄换算自由天数</h4>
+              <p>总收入减去总支出得到净储蓄，再除以日均花销，就是你"已经买到"的自由天数。方格数量幂等，永远等于这个计算结果。</p>
+            </div>
+          </div>
+          <div class="math-callout">
+            <div class="math-callout-marker">C</div>
+            <div class="math-callout-text">
+              <h4>记账天数可以自由设定</h4>
+              <p>你不必从第一天就开始记账。可以设定一个开始日期，系统用这段时间内的支出数据来建立你的"历史基准线"，让模型更贴近实际。</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="math-formula-block">
+        <div class="math-formula-title">// 核心公式</div>
+        <div class="math-line"><span class="var">avg_daily_expense</span></div>
+        <div class="math-line"><span class="op">&nbsp;&nbsp;=</span> <span class="var">total_expense</span> <span class="op">/</span> <span class="var">tracking_days</span></div>
+        <br>
+        <div class="math-line"><span class="var">net_savings</span></div>
+        <div class="math-line"><span class="op">&nbsp;&nbsp;=</span> <span class="var">total_income</span> <span class="op">-</span> <span class="var">total_expense</span></div>
+        <br>
+        <div class="math-line result"><span class="var">freedom_days</span><br><span class="op">&nbsp;&nbsp;=</span> floor( <span class="var">net_savings</span> <span class="op">/</span> <span class="var">avg_daily_expense</span> )</div>
+        <br>
+        <div class="math-formula-title">// 人生方格总数</div>
+        <div class="math-line"><span class="var">total_cells</span></div>
+        <div class="math-line"><span class="op">&nbsp;&nbsp;=</span> ( <span class="var">birth_date</span> <span class="op">+</span> <span class="var">target_age</span> <span class="op">- today</span> ).days</div>
+        <br>
+        <div class="math-formula-title">// 点亮格数</div>
+        <div class="math-line"><span class="var">lit_count</span></div>
+        <div class="math-line"><span class="op">&nbsp;&nbsp;=</span> min( <span class="var">freedom_days</span>, <span class="var">total_cells</span> )</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ANIMATION -->
+<section id="animation">
+  <div class="container">
+    <div class="sec-header centered">
+      <span class="sec-tag">仪式感动画</span>
+      <h2 class="sec-title">数据是真相，动画是仪式</h2>
+      <p class="sec-desc">动画不是装饰，它让你在生理层面感受到财富的增减，而不只是盯着一个变化的数字。</p>
+    </div>
+    <div class="anim-cards">
+      <div class="anim-card">
+        <span class="anim-symbol">✦</span>
+        <h3 class="anim-title">点亮仪式</h3>
+        <p class="anim-desc">镜头缩放定位，方格从暗灰跃升为白热爆发，橙黄光晕扩散，最终稳定为金色呼吸光。每格约 25–180ms，增量越小越从容。</p>
+      </div>
+      <div class="anim-card">
+        <span class="anim-symbol">◌</span>
+        <h3 class="anim-title">熄灭仪式</h3>
+        <p class="anim-desc">金色方格先红橙闪烁，再转为灰烬，最后归入黑暗。节奏比点亮慢 1.3 倍——失去比获得更值得感受。</p>
+      </div>
+      <div class="anim-card">
+        <span class="anim-symbol">✧</span>
+        <h3 class="anim-title">财富自由彩蛋</h3>
+        <p class="anim-desc">全局烟花连锁波纹，所有方格一起震动，中央金光爆发，"FREE"浮现。只触发一次，不会剧透，等着你去到达。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- PRIVACY -->
+<section id="privacy">
+  <div class="container">
+    <div class="privacy-layout">
+      <div>
+        <span class="sec-tag">数据隐私</span>
+        <h2 class="sec-title">你的数据，只在你的浏览器里</h2>
+        <p class="sec-desc" style="margin-bottom: 2rem;">纯静态前端，没有服务器，没有账号，没有上传。一切数据存储在本地 localStorage，关闭标签页数据依然在，换设备就导出导入。</p>
+        <div class="privacy-points">
+          <div class="privacy-point">
+            <div class="privacy-check">
+              <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6l3 3 5-5"/></svg>
+            </div>
+            <div class="privacy-point-text">
+              <h4>无需注册，无需登录</h4>
+              <p>打开网址即可开始，不需要任何账号。</p>
+            </div>
+          </div>
+          <div class="privacy-point">
+            <div class="privacy-check">
+              <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6l3 3 5-5"/></svg>
+            </div>
+            <div class="privacy-point-text">
+              <h4>数据不上传任何服务器</h4>
+              <p>纯前端静态应用，GitHub Pages 托管，无后端。</p>
+            </div>
+          </div>
+          <div class="privacy-point">
+            <div class="privacy-check">
+              <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6l3 3 5-5"/></svg>
+            </div>
+            <div class="privacy-point-text">
+              <h4>分享链接不分享数据</h4>
+              <p>把链接发给朋友，他们会看到空白的新应用，而不是你的财务数据。</p>
+            </div>
+          </div>
+          <div class="privacy-point">
+            <div class="privacy-check">
+              <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6l3 3 5-5"/></svg>
+            </div>
+            <div class="privacy-point-text">
+              <h4>导出 JSON，完整备份</h4>
+              <p>一键导出，换设备时导入恢复，数据永远属于你。</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="privacy-visual">
+        <div class="privacy-tag">// localStorage 存储示意</div>
+        <div class="storage-bar"><div class="storage-bar-fill"></div></div>
+        <div class="storage-label"><span>已使用</span><span>本地存储 · 仅在此设备</span></div>
+        <div class="storage-note">
+          所有数据结构为 JSON 格式，包含 <code style="color:var(--gold2);font-family:var(--font-mono);font-size:0.78em">settings</code>（生日、目标年龄）和 <code style="color:var(--gold2);font-family:var(--font-mono);font-size:0.78em">transactions</code>（交易记录）。完整透明，随时可查、可导出、可删除。
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- FINAL CTA -->
+<section id="final-cta">
+  <div class="container">
+    <p class="final-label">开始你的财富自由之旅</p>
+    <h2 class="final-title">第一格，<em>等你来点亮</em></h2>
+    <p class="final-desc">输入生日，记录第一笔收入，看方格从黑暗中亮起。那一刻，你知道自己正在走向自由。</p>
+    <div class="final-ctas">
+      <a href="https://wealth-grid.tyihan.com" class="cta-primary" target="_blank">
+        立即开始
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+    </div>
+    <p class="final-note">wealth-grid.tyihan.com · 免费 · 无账号 · 数据本地</p>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <span class="footer-brand">财富自由指南灯</span>
+    <span class="footer-meta">
+      <a href="https://wealth-grid.tyihan.com" class="footer-link" target="_blank">wealth-grid.tyihan.com</a>
+      &nbsp;·&nbsp; 数据存储于本地浏览器
+    </span>
+  </div>
+</footer>
+
+<!-- DEMO CANVAS ANIMATION -->
+<script>
+(function() {
+  const canvas = document.getElementById('demo-canvas');
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+
+  function setup() {
+    const w = canvas.offsetWidth;
+    const h = canvas.offsetHeight;
+    canvas.width = w * dpr;
+    canvas.height = h * dpr;
+    ctx.scale(dpr, dpr);
+    return { w, h };
+  }
+
+  const CELL = 6, GAP = 1, STEP = CELL + GAP;
+  const GOLD = '#ffd166', UNLIT = '#1e1e2c', BG = '#08080d';
+  const GOLD_DIM = '#c49a30', GOLD_BRIGHT = '#fff0a0';
+
+  let cols, rows, totalCells, litTarget, litCurrent = 0;
+  let animating = false, animFrame = 0;
+  let breathT = 0;
+
+  function init() {
+    const { w, h } = setup();
+    cols = Math.floor((w + GAP) / STEP);
+    rows = Math.floor((h + GAP) / STEP);
+    totalCells = cols * rows;
+    litTarget = Math.floor(totalCells * 0.31);
+    litCurrent = 0;
+    animating = true;
+    loop();
+  }
+
+  function cellPos(i) {
+    const col = i % cols, row = Math.floor(i / cols);
+    return { x: col * STEP, y: row * STEP };
+  }
+
+  function drawAll(breath) {
+    ctx.fillStyle = BG;
+    ctx.fillRect(0, 0, canvas.offsetWidth, canvas.offsetHeight);
+    const lit = Math.floor(litCurrent);
+    for (let i = 0; i < totalCells; i++) {
+      const { x, y } = cellPos(i);
+      if (i < lit) {
+        if (i === lit - 1) {
+          const b = (Math.sin(breath) + 1) / 2;
+          const lum = Math.floor(180 + b * 75);
+          ctx.fillStyle = `rgb(255,${lum},${Math.floor(lum * 0.4)})`;
+        } else {
+          ctx.fillStyle = GOLD;
+        }
+      } else {
+        ctx.fillStyle = UNLIT;
+      }
+      ctx.fillRect(x, y, CELL, CELL);
+    }
+  }
+
+  let raf;
+  function loop() {
+    breathT += 0.04;
+    if (animating && litCurrent < litTarget) {
+      litCurrent = Math.min(litCurrent + 0.8, litTarget);
+    }
+    drawAll(breathT);
+    raf = requestAnimationFrame(loop);
+  }
+
+  // Restart animation periodically for demo effect
+  function restart() {
+    litCurrent = 0;
+    litTarget = Math.floor(totalCells * (0.2 + Math.random() * 0.5));
+    animating = true;
+  }
+  setInterval(restart, 6000);
+
+  window.addEventListener('resize', () => {
+    cancelAnimationFrame(raf);
+    init();
+  });
+
+  init();
+})();
+</script>
+
+</body>
+</html>
