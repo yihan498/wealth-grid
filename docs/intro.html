@@ -445,6 +445,26 @@ footer {
 .footer-link { color: var(--text3); transition: color 0.2s; }
 .footer-link:hover { color: var(--gold); }
 
+/* ══ SCROLL REVEAL ═══════════════════════════════════════════════════════ */
+.reveal {
+  opacity: 0;
+  transform: translateY(32px);
+  transition: opacity 0.75s cubic-bezier(0.22, 1, 0.36, 1),
+              transform 0.75s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.reveal.from-left  { transform: translateX(-32px); }
+.reveal.from-right { transform: translateX(32px); }
+.reveal.is-visible { opacity: 1; transform: none; }
+.reveal.d1 { transition-delay: 0.08s; }
+.reveal.d2 { transition-delay: 0.17s; }
+.reveal.d3 { transition-delay: 0.26s; }
+.reveal.d4 { transition-delay: 0.35s; }
+.reveal.d5 { transition-delay: 0.44s; }
+.reveal.d6 { transition-delay: 0.53s; }
+@media (prefers-reduced-motion: reduce) {
+  .reveal { opacity: 1; transform: none; transition: none; }
+}
+
 /* ══ RESPONSIVE ══════════════════════════════════════════════════════════ */
 @media (max-width: 860px) {
   .why-grid { grid-template-columns: 1fr; }
@@ -503,25 +523,25 @@ footer {
 <!-- WHY -->
 <section id="why">
   <div class="container">
-    <div class="sec-header">
+    <div class="sec-header reveal">
       <span class="sec-tag">核心理念</span>
       <h2 class="sec-title">记账，不只是记一个数字</h2>
       <p class="sec-desc">传统记账只告诉你花了多少、赚了多少。这里，我们回答一个更本质的问题。</p>
     </div>
     <div class="why-grid">
-      <div class="why-card w1">
+      <div class="why-card w1 reveal d1">
         <div class="why-num">01</div>
         <h3 class="why-title">你的财富能支撑你活多少天？</h3>
         <p class="why-desc">不是"账户余额多少"，而是按照你目前的生活开支，你的净储蓄可以让你自由地活多少天。这才是财富自由的真实进度。</p>
         <span class="why-answer">自由天数 = 净储蓄 ÷ 日均花销</span>
       </div>
-      <div class="why-card w2">
+      <div class="why-card w2 reveal d2">
         <div class="why-num">02</div>
         <h3 class="why-title">每笔收入都是在买时间</h3>
         <p class="why-desc">当你录入一笔收入，系统会立即告诉你：这笔钱买到了你多少天的自由。不是抽象的数字，而是你能"看到"的方格。</p>
         <span class="why-answer">收入 → 点亮 N 个方格</span>
       </div>
-      <div class="why-card w3">
+      <div class="why-card w3 reveal d3">
         <div class="why-num">03</div>
         <h3 class="why-title">每笔支出都是在消耗未来</h3>
         <p class="why-desc">支出会抬高你的日均花销，让每一元储蓄换得的自由天数变少。你会清楚地看到方格在减少——花钱的感受完全不同了。</p>
@@ -536,24 +556,24 @@ footer {
 <!-- HOW IT WORKS -->
 <section id="how">
   <div class="container">
-    <div class="sec-header centered">
+    <div class="sec-header centered reveal">
       <span class="sec-tag">三步开始</span>
       <h2 class="sec-title">从开始到点亮第一格</h2>
     </div>
     <div class="how-steps">
-      <div class="how-step">
+      <div class="how-step reveal d1">
         <div class="how-step-num">一</div>
         <h3 class="how-step-title">设置生日与目标年龄</h3>
         <p class="how-step-desc">告诉我们你的生日和希望达到财富自由的目标年龄（默认80岁），系统生成你专属的人生方格图——每格代表剩余人生中的一天。</p>
         <p class="how-step-detail">默认目标年龄 · 80 岁</p>
       </div>
-      <div class="how-step">
+      <div class="how-step reveal d2">
         <div class="how-step-num">二</div>
         <h3 class="how-step-title">记录你的收入与支出</h3>
         <p class="how-step-desc">填写金额，选择类型，提交。系统会自动计算你的日均花销和净储蓄，换算成你买到的自由天数。</p>
         <p class="how-step-detail">支持记账天数自由设定</p>
       </div>
-      <div class="how-step">
+      <div class="how-step reveal d3">
         <div class="how-step-num">三</div>
         <h3 class="how-step-title">看着方格一颗一颗点亮</h3>
         <p class="how-step-desc">每一笔收入都会触发仪式动画，镜头缩放到对应位置，方格从黑暗中亮起，金光扩散，然后稳定呼吸。这一刻，你知道自己在变得更自由。</p>
@@ -568,47 +588,47 @@ footer {
 <!-- FEATURES -->
 <section id="features">
   <div class="container">
-    <div class="sec-header">
+    <div class="sec-header reveal">
       <span class="sec-tag">功能亮点</span>
       <h2 class="sec-title">不只是一个记账工具</h2>
     </div>
     <div class="features-grid">
-      <div class="feature-card">
+      <div class="feature-card reveal d1">
         <div class="feature-icon">✦</div>
         <div class="feature-body">
           <h3 class="feature-title">Canvas 方格引擎</h3>
           <p class="feature-desc">高性能 Canvas 渲染，流畅展示两万格以上的人生方格图。自适应屏幕宽度，支持高 DPI 显示，不卡顿，不失真。</p>
         </div>
       </div>
-      <div class="feature-card">
+      <div class="feature-card reveal d2">
         <div class="feature-icon">⟳</div>
         <div class="feature-body">
           <h3 class="feature-title">点亮 / 熄灭仪式动画</h3>
           <p class="feature-desc">每次记账都是一个仪式：镜头缩放定位，方格逐格点亮，金色光晕扩散，呼吸灯稳定。失去时，灰烬色渐暗，感受不同于获得。</p>
         </div>
       </div>
-      <div class="feature-card">
+      <div class="feature-card reveal d3">
         <div class="feature-icon">◎</div>
         <div class="feature-body">
           <h3 class="feature-title">今日呼吸灯</h3>
           <p class="feature-desc">代表"今天"的方格始终在轻微呼吸，提醒你这一天正在流逝。时间是真实的，财富自由进度也是。</p>
         </div>
       </div>
-      <div class="feature-card">
+      <div class="feature-card reveal d4">
         <div class="feature-icon">✧</div>
         <div class="feature-body">
           <h3 class="feature-title">财富自由达成彩蛋</h3>
           <p class="feature-desc">当你的自由天数填满所有剩余格，全局烟花连锁波纹炸开，"FREE"字样浮现。只会触发一次。值得期待。</p>
         </div>
       </div>
-      <div class="feature-card">
+      <div class="feature-card reveal d5">
         <div class="feature-icon">⇅</div>
         <div class="feature-body">
           <h3 class="feature-title">导入 / 导出</h3>
           <p class="feature-desc">一键导出全部数据为 JSON 文件，在新设备导入即可恢复。数据永远属于你，不依赖任何云服务。</p>
         </div>
       </div>
-      <div class="feature-card">
+      <div class="feature-card reveal d6">
         <div class="feature-icon">≡</div>
         <div class="feature-body">
           <h3 class="feature-title">最近交易折叠面板</h3>
@@ -625,7 +645,7 @@ footer {
 <section id="math">
   <div class="container">
     <div class="math-layout">
-      <div>
+      <div class="reveal from-left">
         <span class="sec-tag">数学模型</span>
         <h2 class="sec-title">一个公式，把财富翻译成时间</h2>
         <div class="math-callouts">
@@ -652,7 +672,7 @@ footer {
           </div>
         </div>
       </div>
-      <div class="math-formula-block">
+      <div class="math-formula-block reveal from-right">
         <div class="math-formula-title">// 核心公式</div>
         <div class="math-line"><span class="var">avg_daily_expense</span></div>
         <div class="math-line"><span class="op">&nbsp;&nbsp;=</span> <span class="var">total_expense</span> <span class="op">/</span> <span class="var">tracking_days</span></div>
@@ -679,23 +699,23 @@ footer {
 <!-- ANIMATION -->
 <section id="animation">
   <div class="container">
-    <div class="sec-header centered">
+    <div class="sec-header centered reveal">
       <span class="sec-tag">仪式感动画</span>
       <h2 class="sec-title">数据是真相，动画是仪式</h2>
       <p class="sec-desc">动画不是装饰，它让你在生理层面感受到财富的增减，而不只是盯着一个变化的数字。</p>
     </div>
     <div class="anim-cards">
-      <div class="anim-card">
+      <div class="anim-card reveal d1">
         <span class="anim-symbol">✦</span>
         <h3 class="anim-title">点亮仪式</h3>
         <p class="anim-desc">镜头缩放定位，方格从暗灰跃升为白热爆发，橙黄光晕扩散，最终稳定为金色呼吸光。每格约 25–180ms，增量越小越从容。</p>
       </div>
-      <div class="anim-card">
+      <div class="anim-card reveal d2">
         <span class="anim-symbol">◌</span>
         <h3 class="anim-title">熄灭仪式</h3>
         <p class="anim-desc">金色方格先红橙闪烁，再转为灰烬，最后归入黑暗。节奏比点亮慢 1.3 倍——失去比获得更值得感受。</p>
       </div>
-      <div class="anim-card">
+      <div class="anim-card reveal d3">
         <span class="anim-symbol">✧</span>
         <h3 class="anim-title">财富自由彩蛋</h3>
         <p class="anim-desc">全局烟花连锁波纹，所有方格一起震动，中央金光爆发，"FREE"浮现。只触发一次，不会剧透，等着你去到达。</p>
@@ -710,7 +730,7 @@ footer {
 <section id="privacy">
   <div class="container">
     <div class="privacy-layout">
-      <div>
+      <div class="reveal from-left">
         <span class="sec-tag">数据隐私</span>
         <h2 class="sec-title">你的数据，只在你的浏览器里</h2>
         <p class="sec-desc" style="margin-bottom: 2rem;">纯静态前端，没有服务器，没有账号，没有上传。一切数据存储在本地 localStorage，关闭标签页数据依然在，换设备就导出导入。</p>
@@ -753,7 +773,7 @@ footer {
           </div>
         </div>
       </div>
-      <div class="privacy-visual">
+      <div class="privacy-visual reveal from-right">
         <div class="privacy-tag">// localStorage 存储示意</div>
         <div class="storage-bar"><div class="storage-bar-fill"></div></div>
         <div class="storage-label"><span>已使用</span><span>本地存储 · 仅在此设备</span></div>
@@ -770,16 +790,16 @@ footer {
 <!-- FINAL CTA -->
 <section id="final-cta">
   <div class="container">
-    <p class="final-label">开始你的财富自由之旅</p>
-    <h2 class="final-title">第一格，<em>等你来点亮</em></h2>
-    <p class="final-desc">输入生日，记录第一笔收入，看方格从黑暗中亮起。那一刻，你知道自己正在走向自由。</p>
-    <div class="final-ctas">
+    <p class="final-label reveal">开始你的财富自由之旅</p>
+    <h2 class="final-title reveal d1">第一格，<em>等你来点亮</em></h2>
+    <p class="final-desc reveal d2">输入生日，记录第一笔收入，看方格从黑暗中亮起。那一刻，你知道自己正在走向自由。</p>
+    <div class="final-ctas reveal d3">
       <a href="https://wealth-grid.tyihan.com" class="cta-primary" target="_blank">
         立即开始
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
       </a>
     </div>
-    <p class="final-note">wealth-grid.tyihan.com · 免费 · 无账号 · 数据本地</p>
+    <p class="final-note reveal d4">wealth-grid.tyihan.com · 免费 · 无账号 · 数据本地</p>
   </div>
 </section>
 
@@ -793,6 +813,22 @@ footer {
     </span>
   </div>
 </footer>
+
+<!-- SCROLL REVEAL -->
+<script>
+(function() {
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('is-visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.12 });
+
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+})();
+</script>
 
 <!-- DEMO CANVAS ANIMATION -->
 <script>
