@@ -1037,6 +1037,38 @@ input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner
   font-size: 11px; color: var(--text-3); line-height: 1.6;
   margin-top: -6px;
 }
+.stable-asset-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 4px; }
+.asset-row {
+  display: grid;
+  grid-template-columns: 1fr 90px 64px 118px 26px;
+  gap: 5px; align-items: center;
+}
+.asset-row input {
+  width: 100%; padding: 6px 8px;
+  background: var(--surface-2); border: 1px solid var(--line-1);
+  border-radius: 6px; color: var(--text-1); font-size: 13px;
+  font-family: inherit;
+}
+.asset-row input:focus { outline: none; border-color: var(--gold-dim); }
+.ar-remove {
+  width: 26px; height: 26px; padding: 0;
+  background: transparent; border: 1px solid var(--line-1);
+  border-radius: 6px; color: var(--text-3);
+  cursor: pointer; font-size: 15px; line-height: 1;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.ar-remove:hover { border-color: #e05; color: #e05; }
+.btn-add-asset {
+  padding: 5px 12px;
+  background: transparent; border: 1px dashed var(--line-1);
+  border-radius: 6px; color: var(--text-3); font-size: 12px;
+  cursor: pointer; width: 100%;
+}
+.btn-add-asset:hover { border-color: var(--gold-dim); color: var(--gold-dim); }
+@media (max-width: 480px) {
+  .asset-row { grid-template-columns: 1fr 76px 56px 1fr 26px; }
+}
 
 /* ============================================
    Freedom Banner (彩蛋) · 多层波纹 + 中央光辉 + 子标题

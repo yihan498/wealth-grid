@@ -142,6 +142,38 @@
     },
   };
 
+  // ===================== 稳定资产（固定利率复利自动计算） =====================
+  const stableAssets = (() => {
+    const KEY = 'wg_stable_assets';
+    function getAll() { try { return JSON.parse(localStorage.getItem(KEY)) || []; } catch { return []; } }
+    function saveAll(arr) { localStorage.setItem(KEY, JSON.stringify(arr)); }
+
+    function genTxs() {
+      const assets = getAll();
+      const today  = todayISO();
+      const txs    = [];
+      for (const a of assets) {
+        if (!(a.principal > 0) || !(a.annual_rate > 0) || !a.start_date) continue;
+        const dailyRate = a.annual_rate / 100 / 365;
+        let p = a.principal;
+        let d = parseDate(a.start_date);
+        const todayD = parseDate(today);
+        while (d <= todayD) {
+          const income = p * dailyRate;
+          if (income >= 0.001) {
+            txs.push({ type: 'income', amount: Math.round(income * 100) / 100,
+                       occurred_on: _iso(d), note: `资产收益·${a.name || '理财'}`, _synthetic: true });
+          }
+          p *= (1 + dailyRate);
+          d = new Date(d.getTime() + 86400000);
+        }
+      }
+      return txs;
+    }
+
+    return { getAll, saveAll, genTxs };
+  })();
+
   // ===================== 飞书多维表格同步 =====================
   const feishuSync = (() => {
     const CFG_KEY = 'wg_feishu';
@@ -338,30 +370,33 @@
   // ===================== 本地 API shim =====================
   const api = {
     state: () => Promise.resolve((() => {
-      const settings = store.getSettings();
-      const txs      = store.getTxs();
-      const stats    = computeStats(settings, txs);
-      const recent   = [...txs].sort((a, b) => b.occurred_on.localeCompare(a.occurred_on) || b.id - a.id).slice(0, 50);
+      const settings  = store.getSettings();
+      const txs       = store.getTxs();
+      const allTxs    = [...txs, ...stableAssets.genTxs()];
+      const stats     = computeStats(settings, allTxs);
+      const recent    = [...txs].sort((a, b) => b.occurred_on.localeCompare(a.occurred_on) || b.id - a.id).slice(0, 50);
       return { settings, stats, transactions: recent };
     })()),
     settings: (body) => Promise.resolve((() => {
       store.saveSettings(body);
-      return { settings: body, stats: computeStats(body, store.getTxs()) };
+      return { settings: body, stats: computeStats(body, [...store.getTxs(), ...stableAssets.genTxs()]) };
     })()),
     addTx: (body) => Promise.resolve((() => {
       const settings  = store.getSettings();
-      const litBefore = computeStats(settings, store.getTxs()).lit_count;
+      const allTxs    = () => [...store.getTxs(), ...stableAssets.genTxs()];
+      const litBefore = computeStats(settings, allTxs()).lit_count;
       const tx        = store.addTx(body);
-      const stats     = computeStats(settings, store.getTxs());
+      const stats     = computeStats(settings, allTxs());
       const delta     = stats.lit_count - litBefore;
       return { transaction: tx, stats, lit_before: litBefore, lit_after: stats.lit_count, delta,
                animation: delta > 0 ? 'light_up' : (delta < 0 ? 'extinguish' : 'none') };
     })()),
     delTx: (id) => Promise.resolve((() => {
       const settings  = store.getSettings();
-      const litBefore = computeStats(settings, store.getTxs()).lit_count;
+      const allTxs    = () => [...store.getTxs(), ...stableAssets.genTxs()];
+      const litBefore = computeStats(settings, allTxs()).lit_count;
       store.delTx(id);
-      const stats     = computeStats(settings, store.getTxs());
+      const stats     = computeStats(settings, allTxs());
       const delta     = stats.lit_count - litBefore;
       return { deleted: id, stats, lit_before: litBefore, lit_after: stats.lit_count, delta,
                animation: delta > 0 ? 'light_up' : (delta < 0 ? 'extinguish' : 'none') };
@@ -659,9 +694,50 @@
     els.cfgAssetsField.hidden  = !els.cfgUseAssets.checked;
     els.modalTargetAgeDisplay.textContent = els.cfgTargetAge.value;
     feishuSync.loadIntoForm(els);
+    renderStableAssetList(stableAssets.getAll());
     setTimeout(() => birthDP.trigger.focus(), 80);
   }
   function hideOverlay() { els.overlay.hidden = true; }
+
+  // ---- 稳定资产列表渲染 ----
+  function makeAssetRow(a) {
+    const div = document.createElement('div');
+    div.className = 'asset-row';
+    div.dataset.id = a.id || (Date.now() + Math.random());
+    div.innerHTML =
+      `<input class="ar-name"      placeholder="名称（如余额宝）" value="${escHtml(a.name || '')}">` +
+      `<input class="ar-principal" type="number" placeholder="本金¥" min="0" value="${a.principal || ''}">` +
+      `<input class="ar-rate"      type="number" placeholder="年化%" step="0.01" min="0" value="${a.annual_rate || ''}">` +
+      `<input class="ar-date"      type="date" value="${a.start_date || todayISO()}">` +
+      `<button class="ar-remove" aria-label="删除">×</button>`;
+    return div;
+  }
+  function renderStableAssetList(assets) {
+    const list = document.getElementById('stable-asset-list');
+    if (!list) return;
+    list.innerHTML = '';
+    assets.forEach(a => list.appendChild(makeAssetRow(a)));
+  }
+  function readAssetListFromDom() {
+    return [...document.querySelectorAll('#stable-asset-list .asset-row')].map(row => ({
+      id: row.dataset.id,
+      name:        row.querySelector('.ar-name').value.trim() || '资产',
+      principal:   parseFloat(row.querySelector('.ar-principal').value) || 0,
+      annual_rate: parseFloat(row.querySelector('.ar-rate').value)      || 0,
+      start_date:  row.querySelector('.ar-date').value,
+    })).filter(a => a.principal > 0 && a.annual_rate > 0 && a.start_date);
+  }
+
+  document.getElementById('btn-add-stable-asset')?.addEventListener('click', () => {
+    const list = document.getElementById('stable-asset-list');
+    if (!list) return;
+    const row = makeAssetRow({ id: Date.now() + Math.random(), start_date: todayISO() });
+    list.appendChild(row);
+    row.querySelector('.ar-name').focus();
+  });
+  document.getElementById('stable-asset-list')?.addEventListener('click', e => {
+    if (e.target.closest('.ar-remove')) e.target.closest('.asset-row').remove();
+  });
 
   els.btnSettings.addEventListener('click', showOverlay);
   els.btnTxToggle.addEventListener('click', () => {
@@ -691,6 +767,9 @@
       });
       state.settings = r.settings; state.stats = r.stats;
       feishuSync.saveFromForm(els);
+      stableAssets.saveAll(readAssetListFromDom());
+      // Re-fetch stats now that assets are saved (genTxs uses saved data)
+      state.stats = (await api.state()).stats;
       grid.setData(state.stats); renderAll(); hideOverlay();
     } finally { state.busy = false; }
   });
