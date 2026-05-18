@@ -131,16 +131,16 @@
         <div class="stat"><div class="stat__label">记账天数</div><div class="stat__value" id="st-days">0</div></div>
       </section>
 
-      <!-- 最近交易 -->
-      <section class="tx-list" aria-label="最近交易">
-        <div class="tx-list__head">
-          <h2>最近交易</h2>
-          <span class="tx-list__count" id="tx-count">0 笔</span>
-        </div>
-        <ul class="tx-list__items" id="tx-items"></ul>
-        <div class="tx-list__empty">
-          <p>暂无交易记录</p>
-          <p class="tx-list__hint">添加收入或支出后显示</p>
+      <!-- 最近交易 · 可折叠 -->
+      <section class="tx-list" id="tx-list">
+        <button class="tx-list__toggle" id="btn-tx-toggle" aria-expanded="false" aria-controls="tx-body">
+          最近交易
+          <span class="tx-list__count" id="tx-count"></span>
+          <svg class="tx-list__arrow" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div class="tx-list__body" id="tx-body">
+          <ul class="tx-list__items" id="tx-items"></ul>
+          <div class="tx-list__empty"><p>暂无交易记录</p></div>
         </div>
       </section>
 

@@ -722,50 +722,66 @@ input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner
 }
 
 /* Tx list */
+/* ---- 最近交易 · 折叠式 ---- */
 .tx-list {
-  flex: 1; min-height: 0;
-  display: flex; flex-direction: column;
+  flex-shrink: 0;
   border-radius: var(--r-lg);
   background: var(--bg-card);
   border: 1px solid var(--line-1);
-  padding: 12px;
+  overflow: hidden;
 }
-.tx-list__head {
-  display: flex; align-items: baseline; justify-content: space-between;
-  padding: 6px 6px 12px;
-}
-.tx-list__head h2 {
+.tx-list__toggle {
+  width: 100%;
+  display: flex; align-items: center; gap: 6px;
+  padding: 11px 14px;
   font-family: var(--ff-serif-cn);
-  font-size: 14px;
+  font-size: 13.5px;
   color: var(--text-2);
   letter-spacing: 0.04em;
+  text-align: left;
+  transition: background .15s var(--ease-out);
 }
+.tx-list__toggle:hover { background: rgba(255,255,255,0.03); }
 .tx-list__count {
   font-family: var(--ff-mono);
   font-size: 11px;
   color: var(--text-4);
+  margin-left: 2px;
 }
+.tx-list__arrow {
+  margin-left: auto;
+  color: var(--text-3);
+  flex-shrink: 0;
+  transition: transform .25s var(--ease-out);
+}
+.tx-list.is-open .tx-list__arrow { transform: rotate(180deg); }
+
+.tx-list__body {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height .35s var(--ease-out);
+}
+.tx-list.is-open .tx-list__body { max-height: 300px; }
+
 .tx-list__items {
-  flex: 1; min-height: 0;
-  margin: 0; padding: 0;
+  margin: 0; padding: 0 10px 10px;
   list-style: none;
   overflow-y: auto;
   display: flex; flex-direction: column;
-  gap: 4px;
+  gap: 2px;
+  max-height: 260px;
 }
 .tx-list__items::-webkit-scrollbar { width: 4px; }
 .tx-list__items::-webkit-scrollbar-thumb { background: var(--line-2); border-radius: 2px; }
 .tx-list__empty {
   display: none;
-  flex-direction: column; align-items: center; justify-content: center;
-  flex: 1; padding: 30px 10px;
+  padding: 18px 14px;
   text-align: center;
   color: var(--text-3);
+  font-size: 12.5px;
 }
-.tx-list__empty p { margin: 0; font-size: 13px; }
-.tx-list__hint { color: var(--text-4); font-size: 11.5px; margin-top: 6px !important; }
 .tx-list.is-empty .tx-list__items { display: none; }
-.tx-list.is-empty .tx-list__empty { display: flex; }
+.tx-list.is-empty .tx-list__empty { display: block; }
 
 .tx-item {
   display: grid;

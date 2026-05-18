@@ -189,9 +189,10 @@
     stExpense:            $('#st-expense'),
     stAvg:                $('#st-avg'),
     stDays:               $('#st-days'),
-    txList:               $('.tx-list'),
+    txList:               $('#tx-list'),
     txItems:              $('#tx-items'),
     txCount:              $('#tx-count'),
+    btnTxToggle:          $('#btn-tx-toggle'),
     legendOverflow:       $('#legend-overflow'),
     legendExpense:        $('#legend-expense'),
     stageFooter:          $('#stage-footer-text'),
@@ -378,10 +379,14 @@
       : '设置生日后开始你的财富自由之旅';
   }
 
-  function renderTxList() {
+  function renderTxList(autoExpand = false) {
     const items = state.transactions;
-    els.txCount.textContent = items.length + ' 笔';
+    els.txCount.textContent = items.length ? `(${items.length})` : '';
     els.txList.classList.toggle('is-empty', items.length === 0);
+    if (autoExpand && items.length > 0) {
+      els.txList.classList.add('is-open');
+      els.btnTxToggle.setAttribute('aria-expanded', 'true');
+    }
     els.txItems.innerHTML = '';
     const frag = document.createDocumentFragment();
     for (const t of items) {
@@ -433,6 +438,10 @@
   function hideOverlay() { els.overlay.hidden = true; }
 
   els.btnSettings.addEventListener('click', showOverlay);
+  els.btnTxToggle.addEventListener('click', () => {
+    const open = els.txList.classList.toggle('is-open');
+    els.btnTxToggle.setAttribute('aria-expanded', open.toString());
+  });
   els.cfgCancel.addEventListener('click', () => { if (state.settings) hideOverlay(); });
   els.cfgTargetAge.addEventListener('input', e => { els.modalTargetAgeDisplay.textContent = e.target.value || '80'; });
   els.cfgUseAssets.addEventListener('change', () => {
@@ -483,7 +492,7 @@
       state.transactions.unshift(res.transaction);
       state.transactions = state.transactions.slice(0, 50);
       state.stats = res.stats;
-      renderStats(); renderTxList();
+      renderStats(); renderTxList(true);
       els.txAmount.value = '';
       await playAnimation(res);
       grid.setData(state.stats); renderProgress();
@@ -498,7 +507,7 @@
       const res = await api.delTx(id);
       state.transactions = state.transactions.filter(t => t.id !== id);
       state.stats = res.stats;
-      renderStats(); renderTxList();
+      renderStats(); renderTxList(false);
       await playAnimation(res);
       grid.setData(state.stats); renderProgress();
     } catch (e) { console.error(e); }
