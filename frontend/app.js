@@ -209,10 +209,22 @@
       },
       async sync() {
         const c = getCfg();
-        if (!c.app_id || !c.app_secret || !c.app_token || !c.table_id)
-          throw new Error('请先在设置中填写飞书表格地址、App ID 和 App Secret');
-        const token  = await getToken(c.app_id, c.app_secret);
-        const records = await fetchAll(token, c.app_token, c.table_id);
+        let records;
+
+        // 优先尝试本地桥接服务（node feishu-bridge.mjs），无需 App Secret
+        try {
+          const r = await fetch('http://localhost:9877/sync');
+          if (!r.ok) throw new Error('bridge error');
+          const d = await r.json();
+          if (!d.ok) throw new Error(d.error || 'bridge error');
+          records = d.records;
+        } catch (bridgeErr) {
+          // 桥接不可用，回退到直连 API（需要 App ID + App Secret）
+          if (!c.app_id || !c.app_secret || !c.app_token || !c.table_id)
+            throw new Error('本地桥接服务未启动（node feishu-bridge.mjs），且未配置 App ID/Secret');
+          const token = await getToken(c.app_id, c.app_secret);
+          records = await fetchAll(token, c.app_token, c.table_id);
+        }
         const synced  = new Set(c.synced_ids || []);
         const newTxs  = [];
         for (const rec of records) {
