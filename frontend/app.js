@@ -209,7 +209,7 @@
       },
       async sync() {
         const c = getCfg();
-        let records;
+        let dailyRecords, financeRecords;
 
         // 优先尝试本地桥接服务（node feishu-bridge.mjs），无需 App Secret
         try {
@@ -217,17 +217,22 @@
           if (!r.ok) throw new Error('bridge error');
           const d = await r.json();
           if (!d.ok) throw new Error(d.error || 'bridge error');
-          records = d.records;
+          dailyRecords   = d.daily_records   || [];
+          financeRecords = d.finance_records  || [];
         } catch (bridgeErr) {
           // 桥接不可用，回退到直连 API（需要 App ID + App Secret）
           if (!c.app_id || !c.app_secret || !c.app_token || !c.table_id)
             throw new Error('本地桥接服务未启动（node feishu-bridge.mjs），且未配置 App ID/Secret');
           const token = await getToken(c.app_id, c.app_secret);
-          records = await fetchAll(token, c.app_token, c.table_id);
+          dailyRecords   = await fetchAll(token, c.app_token, c.table_id);
+          financeRecords = [];
         }
-        const synced  = new Set(c.synced_ids || []);
-        const newTxs  = [];
-        for (const rec of records) {
+
+        const synced = new Set(c.synced_ids || []);
+        const newTxs = [];
+
+        // 日常消費流水：支出 or 收入（依「类型」字段）
+        for (const rec of dailyRecords) {
           if (synced.has(rec.record_id)) continue;
           const f      = rec.fields;
           const amount = parseFloat(parseField(f['金额']));
@@ -238,9 +243,27 @@
           else if (typeof dv === 'string' && /^\d{4}-\d{2}-\d{2}/.test(dv)) occurred_on = dv.slice(0, 10);
           const cat  = parseField(f['类别']) || '';
           const note = parseField(f['备注']) || '';
-          newTxs.push({ type: 'expense', amount, occurred_on, note: [cat, note].filter(Boolean).join(' · ') });
+          const txType = parseField(f['类型']) === '收入' ? 'income' : 'expense';
+          newTxs.push({ type: txType, amount, occurred_on, note: [cat, note].filter(Boolean).join(' · ') });
           synced.add(rec.record_id);
         }
+
+        // 稳定理财日志：全部算作收入
+        for (const rec of financeRecords) {
+          if (synced.has(rec.record_id)) continue;
+          const f      = rec.fields;
+          const raw    = parseField(f['日收益（¥）']);
+          const amount = parseFloat(raw);
+          if (!(amount > 0)) continue;
+          let occurred_on = todayISO();
+          const dv = f['日期'];
+          if (typeof dv === 'number') occurred_on = _iso(new Date(dv));
+          else if (typeof dv === 'string' && /^\d{4}-\d{2}-\d{2}/.test(dv)) occurred_on = dv.slice(0, 10);
+          const platform = parseField(f['平台']) || '理财';
+          newTxs.push({ type: 'income', amount, occurred_on, note: `理财收益·${platform}` });
+          synced.add(rec.record_id);
+        }
+
         saveCfg({ ...c, synced_ids: [...synced] });
         return newTxs;
       },

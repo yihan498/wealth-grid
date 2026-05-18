@@ -13,14 +13,14 @@ import { promisify } from 'util';
 const exec = promisify(execFile);
 const PORT      = 9877;
 const APP_TOKEN = 'UjXnbSTfkaUMTxsJqaScdHKFnl9';
-const TABLE_ID  = 'tbl8V8TX2kOILaql';
+const TABLE_DAILY   = 'tbl8V8TX2kOILaql';  // 日常消費流水記錄
+const TABLE_FINANCE = 'tblDoSBwR4O8xnXN';  // 稳定理财日志
 
-async function fetchAllRecords() {
+async function fetchAllRecords(tableId) {
   const all = [];
   let pageToken = '';
   do {
-    // 把分页参数拼进 URL，避免 --params JSON 在子进程里的引号问题
-    let path = `/open-apis/bitable/v1/apps/${APP_TOKEN}/tables/${TABLE_ID}/records?page_size=100`;
+    let path = `/open-apis/bitable/v1/apps/${APP_TOKEN}/tables/${tableId}/records?page_size=100`;
     if (pageToken) path += `&page_token=${encodeURIComponent(pageToken)}`;
     const { stdout } = await exec('lark-cli', ['api', 'GET', path]);
     const data = JSON.parse(stdout);
@@ -32,7 +32,6 @@ async function fetchAllRecords() {
 }
 
 const server = createServer(async (req, res) => {
-  // CORS — 允许本地 wealth-grid 页面调用
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   res.setHeader('Content-Type', 'application/json; charset=utf-8');
@@ -41,10 +40,13 @@ const server = createServer(async (req, res) => {
   if (req.url !== '/sync')      { res.writeHead(404); res.end(JSON.stringify({ error: 'not found' })); return; }
 
   try {
-    const records = await fetchAllRecords();
+    const [dailyRecords, financeRecords] = await Promise.all([
+      fetchAllRecords(TABLE_DAILY),
+      fetchAllRecords(TABLE_FINANCE),
+    ]);
     res.writeHead(200);
-    res.end(JSON.stringify({ ok: true, records }));
-    console.log(`[${new Date().toLocaleTimeString()}] 同步完成，返回 ${records.length} 条记录`);
+    res.end(JSON.stringify({ ok: true, daily_records: dailyRecords, finance_records: financeRecords }));
+    console.log(`[${new Date().toLocaleTimeString()}] 同步完成：日常消費 ${dailyRecords.length} 条，理财日志 ${financeRecords.length} 条`);
   } catch (err) {
     console.error('[Error]', err.message);
     res.writeHead(500);
