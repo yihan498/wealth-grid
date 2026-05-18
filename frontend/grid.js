@@ -320,7 +320,7 @@
       const N = this.totalCells;
       let best = { cell: 2, cols: 1, rows: N, gap: 0 };
       for (let s = 40; s >= 2; s--) {
-        const gap = s >= 6 ? 1 : 0;
+        const gap = 1;
         const cols = Math.floor((W + gap) / (s + gap));
         if (cols < 1) continue;
         const rows = Math.ceil(N / cols);
@@ -470,13 +470,15 @@
 
     _fillRange(ctx, color, from, to, step, cell, animating) {
       if (to <= from) return;
+      const inset = cell >= 4 ? 1 : 0;
+      const draw  = cell - 2 * inset;
       ctx.fillStyle = color;
       ctx.beginPath();
       for (let i = from; i < to; i++) {
         if (animating.has(i)) continue;
         const col = i % this.cols;
         const row = (i / this.cols) | 0;
-        ctx.rect(this.grid.x + col * step, this.grid.y + row * step, cell, cell);
+        ctx.rect(this.grid.x + col * step + inset, this.grid.y + row * step + inset, draw, draw);
       }
       ctx.fill();
     }

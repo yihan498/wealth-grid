@@ -184,15 +184,11 @@
     segBtns:              document.querySelectorAll('.seg__btn'),
     txAmount:             $('#tx-amount'),
     txDate:               $('#tx-date'),
-    txNote:               $('#tx-note'),
     btnSubmit:            $('#btn-submit'),
     stIncome:             $('#st-income'),
     stExpense:            $('#st-expense'),
     stAvg:                $('#st-avg'),
     stDays:               $('#st-days'),
-    txList:               $('.tx-list'),
-    txItems:              $('#tx-items'),
-    txCount:              $('#tx-count'),
     legendOverflow:       $('#legend-overflow'),
     legendExpense:        $('#legend-expense'),
     stageFooter:          $('#stage-footer-text'),
@@ -379,30 +375,7 @@
       : '设置生日后开始你的财富自由之旅';
   }
 
-  function renderTxList() {
-    const items = state.transactions;
-    els.txCount.textContent = items.length;
-    els.txList.classList.toggle('is-empty', items.length === 0);
-    els.txItems.innerHTML = '';
-    const frag = document.createDocumentFragment();
-    for (const t of items) {
-      const li = document.createElement('li');
-      li.className = `tx-item tx-item--${t.type}`;
-      li.innerHTML = `
-        <span class="tx-item__bar"></span>
-        <div class="tx-item__main">
-          <div class="tx-item__note">${escHtml(t.note) || (t.type === 'income' ? '收入' : '支出')}</div>
-          <div class="tx-item__date">${t.occurred_on}</div>
-        </div>
-        <div class="tx-item__amount">${t.type === 'income' ? '+' : '−'}${fmtCNY(t.amount)}</div>
-        <button class="tx-item__del" title="删除" aria-label="删除交易">
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
-        </button>`;
-      li.querySelector('.tx-item__del').addEventListener('click', () => onDelete(t.id));
-      frag.appendChild(li);
-    }
-    els.txItems.appendChild(frag);
-  }
+  function renderTxList() { /* tx-list section removed from UI */ }
 
   const escHtml = (s) => String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
   function renderAll() { renderProgress(); renderStats(); renderTxList(); }
@@ -480,12 +453,12 @@
     audio.ensure();
     state.busy = true; els.btnSubmit.disabled = true;
     try {
-      const res = await api.addTx({ type: state.txType, amount, note: els.txNote.value.trim(), occurred_on: txDP.value || todayISO() });
+      const res = await api.addTx({ type: state.txType, amount, note: '', occurred_on: txDP.value || todayISO() });
       state.transactions.unshift(res.transaction);
       state.transactions = state.transactions.slice(0, 50);
       state.stats = res.stats;
       renderStats(); renderTxList();
-      els.txAmount.value = ''; els.txNote.value = '';
+      els.txAmount.value = '';
       await playAnimation(res);
       grid.setData(state.stats); renderProgress();
     } catch (e) { console.error(e); }
