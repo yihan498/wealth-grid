@@ -421,6 +421,7 @@
       ctx.setTransform(dpr * scale, 0, 0, dpr * scale, dpr * (cx - cx * scale + tx), dpr * (cy - cy * scale + ty));
 
       this.drawGrid(ctx);
+      this._drawGridLines(ctx); // 网格线画在格子色之上
       this.drawAnimating(ctx);
       this.drawToday(ctx); // today 高亮恒在最上层
     }
@@ -430,10 +431,6 @@
       if (!total) return;
       const cell = this.cellSize;
       const step = cell + this.gap;
-
-      // 先用纯黑填满方格区域，作为所有格子共用的黑色边框底色
-      ctx.fillStyle = '#000000';
-      ctx.fillRect(this.grid.x, this.grid.y, this.grid.w, this.grid.h);
       const past = this.pastCells;
       const tracked = this.trackedPastCells;
       const trackedStart = Math.max(0, past - tracked);
@@ -474,17 +471,38 @@
 
     _fillRange(ctx, color, from, to, step, cell, animating) {
       if (to <= from) return;
-      const inset = cell >= 3 ? 1 : 0;
-      const draw  = Math.max(1, cell - 2 * inset);
       ctx.fillStyle = color;
       ctx.beginPath();
       for (let i = from; i < to; i++) {
         if (animating.has(i)) continue;
         const col = i % this.cols;
         const row = (i / this.cols) | 0;
-        ctx.rect(this.grid.x + col * step + inset, this.grid.y + row * step + inset, draw, draw);
+        ctx.rect(this.grid.x + col * step, this.grid.y + row * step, cell, cell);
       }
       ctx.fill();
+    }
+
+    /** 在所有格子上方画一层网格线，形成 Excel 式黑色边框 */
+    _drawGridLines(ctx) {
+      const cell = this.cellSize;
+      if (!this.totalCells || cell < 3) return;
+      const { grid, cols, rows } = this;
+      ctx.save();
+      ctx.strokeStyle = 'rgba(0,0,0,0.55)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      for (let c = 0; c <= cols; c++) {
+        const x = grid.x + c * cell + 0.5;
+        ctx.moveTo(x, grid.y);
+        ctx.lineTo(x, grid.y + rows * cell);
+      }
+      for (let r = 0; r <= rows; r++) {
+        const y = grid.y + r * cell + 0.5;
+        ctx.moveTo(grid.x, y);
+        ctx.lineTo(grid.x + cols * cell, y);
+      }
+      ctx.stroke();
+      ctx.restore();
     }
 
     /** 今天的格子永久呼吸高亮 · 独立 overlay 层 · 始终在最上 */
@@ -492,14 +510,11 @@
       const idx = this.pastCells; // 第一个非过去格 = 今天
       if (!this.totalCells || idx >= this.totalCells) return;
       const r = this.cellRect(idx);
-      const inset = this.cellSize >= 3 ? 1 : 0;
       const cx = r.x + r.w / 2;
       const cy = r.y + r.h / 2;
-      // 1.6s 呼吸周期
       const breath = 0.5 + 0.5 * Math.sin(performance.now() * 0.0040);
       const intensity = 0.55 + 0.45 * breath;
 
-      // 外圈光晕（additive）
       const haloR = r.w * (3.0 + breath * 2.0);
       const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, haloR);
       g.addColorStop(0,    `rgba(255, 244, 214, ${0.55 * intensity})`);
@@ -510,10 +525,8 @@
       ctx.fillRect(cx - haloR, cy - haloR, haloR * 2, haloR * 2);
       ctx.globalCompositeOperation = 'source-over';
 
-      // 中心格本体 · 内缩 1px 保持边框 · goldBloom 强标识 · 不涨破边框
-      const inner = Math.max(1, r.w - 2 * inset);
-      const s = 1.0; // 不缩放，保持在边框内
-      const w = inner * s, h = inner * s;
+      const s = 1 + breath * 0.10;
+      const w = r.w * s, h = r.h * s;
       ctx.fillStyle = C.goldBloom;
       ctx.fillRect(cx - w / 2, cy - h / 2, w, h);
     }
@@ -521,7 +534,6 @@
     drawAnimating(ctx) {
       const now = performance.now();
       const size = this.animations.size;
-      const inset = this.cellSize >= 3 ? 1 : 0;
       // 大批量动画时降级 halo 渲染 · 避免 createRadialGradient 数百次/帧
       const haloStep = size > 100 ? Math.ceil(size / 40) : 1;
       let counter = 0;
@@ -531,7 +543,6 @@
         const r = this.cellRect(idx);
         const cx = r.x + r.w / 2;
         const cy = r.y + r.h / 2;
-        const inner = Math.max(1, r.w - 2 * inset);
         const s = frame.scale;
 
         const drawHalo = frame.halo > 0.02 && (counter % haloStep === 0);
@@ -548,7 +559,7 @@
         }
 
         ctx.fillStyle = frame.color;
-        const w = inner * s, h = inner * s;
+        const w = r.w * s, h = r.h * s;
         ctx.fillRect(cx - w / 2, cy - h / 2, w, h);
         counter++;
       }
