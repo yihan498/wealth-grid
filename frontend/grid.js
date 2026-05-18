@@ -318,9 +318,9 @@
       const W = Math.max(40, this.cssW - padding * 2);
       const H = Math.max(40, this.cssH - padding * 2);
       const N = this.totalCells;
-      let best = { cell: 2, cols: 1, rows: N, gap: 0 };
+      let best = { cell: 2, cols: 1, rows: N, gap: 1 };
       for (let s = 40; s >= 2; s--) {
-        const gap = 0;
+        const gap = 1;
         const cols = Math.floor((W + gap) / (s + gap));
         if (cols < 1) continue;
         const rows = Math.ceil(N / cols);
@@ -412,7 +412,7 @@
     draw() {
       const { ctx, dpr } = this;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      ctx.fillStyle = '#06060c';
+      ctx.fillStyle = '#000000';
       ctx.fillRect(0, 0, this.cssW, this.cssH);
 
       const { scale, tx, ty } = this.camera;
@@ -421,7 +421,6 @@
       ctx.setTransform(dpr * scale, 0, 0, dpr * scale, dpr * (cx - cx * scale + tx), dpr * (cy - cy * scale + ty));
 
       this.drawGrid(ctx);
-      this._drawGridLines(ctx); // 网格线画在格子色之上
       this.drawAnimating(ctx);
       this.drawToday(ctx); // today 高亮恒在最上层
     }
@@ -482,28 +481,6 @@
       ctx.fill();
     }
 
-    /** 在所有格子上方画一层网格线，形成 Excel 式黑色边框 */
-    _drawGridLines(ctx) {
-      const cell = this.cellSize;
-      if (!this.totalCells || cell < 3) return;
-      const { grid, cols, rows } = this;
-      ctx.save();
-      ctx.strokeStyle = 'rgba(0,0,0,0.55)';
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      for (let c = 0; c <= cols; c++) {
-        const x = grid.x + c * cell + 0.5;
-        ctx.moveTo(x, grid.y);
-        ctx.lineTo(x, grid.y + rows * cell);
-      }
-      for (let r = 0; r <= rows; r++) {
-        const y = grid.y + r * cell + 0.5;
-        ctx.moveTo(grid.x, y);
-        ctx.lineTo(grid.x + cols * cell, y);
-      }
-      ctx.stroke();
-      ctx.restore();
-    }
 
     /** 今天的格子永久呼吸高亮 · 独立 overlay 层 · 始终在最上 */
     drawToday(ctx) {
