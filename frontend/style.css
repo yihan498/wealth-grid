@@ -688,6 +688,53 @@ input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner
 .stat__value--expense { color: #ff9c9c; }
 
 /* Data status bar */
+/* File link bar */
+.file-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: var(--r-md);
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid var(--line-1);
+  font-size: 11.5px;
+  color: var(--text-3);
+  flex-shrink: 0;
+}
+.file-link__dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--line-2);
+  transition: background .25s;
+}
+.file-link__dot--on   { background: #5dba6e; box-shadow: 0 0 6px rgba(93,186,110,.5); }
+.file-link__dot--warn { background: #e8a94b; box-shadow: 0 0 6px rgba(232,169,75,.4); }
+.file-link__name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  letter-spacing: 0.03em;
+}
+.file-link__btn {
+  display: inline-flex; align-items: center;
+  padding: 4px 10px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--line-2);
+  color: var(--text-3);
+  font-size: 11px;
+  cursor: pointer;
+  flex-shrink: 0;
+  white-space: nowrap;
+  transition: color .15s var(--ease-out), border-color .15s var(--ease-out), background .15s var(--ease-out);
+}
+.file-link__btn:hover {
+  color: var(--gold-core);
+  border-color: var(--gold-soft);
+  background: rgba(255, 209, 102, 0.06);
+}
+
 .data-status {
   display: flex;
   align-items: center;

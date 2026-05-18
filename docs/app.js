@@ -24,13 +24,102 @@
   const todayISO = () => _iso(new Date());
   const nowISO  = () => new Date().toISOString();
 
+  // ===================== 本地文件直连（File System Access API） =====================
+  const fileStore = (() => {
+    const IDB = 'wg_fs', STORE = 'handles', KEY = 'main';
+    let _handle = null, _connected = false;
+
+    function openDB() {
+      return new Promise((res, rej) => {
+        const r = indexedDB.open(IDB, 1);
+        r.onupgradeneeded = e => e.target.result.createObjectStore(STORE);
+        r.onsuccess = e => res(e.target.result);
+        r.onerror = rej;
+      });
+    }
+    async function idbPut(val) {
+      const db = await openDB();
+      return new Promise((res, rej) => { const tx = db.transaction(STORE,'readwrite'); tx.objectStore(STORE).put(val, KEY); tx.oncomplete = res; tx.onerror = rej; });
+    }
+    async function idbGet() {
+      const db = await openDB();
+      return new Promise((res, rej) => { const tx = db.transaction(STORE,'readonly'); const r = tx.objectStore(STORE).get(KEY); r.onsuccess = e => res(e.target.result); r.onerror = rej; });
+    }
+    async function idbDel() {
+      const db = await openDB();
+      return new Promise((res, rej) => { const tx = db.transaction(STORE,'readwrite'); tx.objectStore(STORE).delete(KEY); tx.oncomplete = res; tx.onerror = rej; });
+    }
+    async function readFile(h) {
+      const f = await h.getFile(); const t = await f.text();
+      if (!t.trim()) return null; return JSON.parse(t);
+    }
+    async function writeFile(h, data) {
+      const w = await h.createWritable();
+      await w.write(JSON.stringify(data, null, 2)); await w.close();
+    }
+
+    return {
+      get connected() { return _connected; },
+      get name() { return _handle?.name || null; },
+
+      async tryRestore() {
+        if (!('showSaveFilePicker' in window)) return 'unsupported';
+        try {
+          const h = await idbGet();
+          if (!h) return 'none';
+          _handle = h;
+          const perm = await h.queryPermission({ mode: 'readwrite' });
+          if (perm === 'granted') { _connected = true; return 'connected'; }
+          return 'needs-auth';
+        } catch { return 'none'; }
+      },
+
+      async requestPermission() {
+        if (!_handle) return false;
+        const p = await _handle.requestPermission({ mode: 'readwrite' });
+        if (p === 'granted') { _connected = true; return true; }
+        return false;
+      },
+
+      async connect() {
+        if (!('showSaveFilePicker' in window)) return 'unsupported';
+        try {
+          const h = await window.showSaveFilePicker({
+            suggestedName: 'wealth-grid-data.json',
+            types: [{ description: 'JSON 数据文件', accept: { 'application/json': ['.json'] } }],
+          });
+          _handle = h;
+          await idbPut(h);
+          _connected = true;
+          try { return await readFile(h); } catch { return null; }
+        } catch (e) { if (e.name === 'AbortError') return 'cancelled'; throw e; }
+      },
+
+      async disconnect() { _handle = null; _connected = false; await idbDel(); },
+      async read() {
+        if (!_connected || !_handle) return null;
+        try { return await readFile(_handle); } catch { return null; }
+      },
+      async write(settings, transactions) {
+        if (!_connected || !_handle) return;
+        await writeFile(_handle, { settings, transactions, saved_at: new Date().toISOString() });
+      },
+    };
+  })();
+
   // ===================== localStorage 存储层 =====================
   const KEYS = { settings: 'wg_settings', transactions: 'wg_transactions' };
   const store = {
     getSettings()     { try { return JSON.parse(localStorage.getItem(KEYS.settings));     } catch { return null; } },
-    saveSettings(s)   { localStorage.setItem(KEYS.settings, JSON.stringify(s)); },
+    saveSettings(s)   {
+      localStorage.setItem(KEYS.settings, JSON.stringify(s));
+      if (fileStore.connected) fileStore.write(s, this.getTxs()).catch(console.error);
+    },
     getTxs()          { try { return JSON.parse(localStorage.getItem(KEYS.transactions)) || []; } catch { return []; } },
-    saveTxs(txs)      { localStorage.setItem(KEYS.transactions, JSON.stringify(txs)); },
+    saveTxs(txs)      {
+      localStorage.setItem(KEYS.transactions, JSON.stringify(txs));
+      if (fileStore.connected) fileStore.write(this.getSettings(), txs).catch(console.error);
+    },
     addTx(body) {
       const txs = this.getTxs();
       const id = txs.length > 0 ? Math.max(...txs.map(t => t.id)) + 1 : 1;
@@ -203,6 +292,10 @@
     btnImport:            $('#btn-import'),
     fileImport:           $('#file-import'),
     dataStatusText:       $('#data-status-text'),
+    fileLink:             $('#file-link'),
+    fileLinkDot:          $('#file-link-dot'),
+    fileLinkName:         $('#file-link-name'),
+    btnFileLink:          $('#btn-file-link'),
   };
 
   // ===================== 引擎 =====================
@@ -559,9 +652,74 @@
     finally { els.fileImport.value = ''; }
   });
 
+  // ===================== 本地文件直连 UI =====================
+  function updateFileLinkUI(status) {
+    const { fileLinkDot: dot, fileLinkName: name, btnFileLink: btn } = els;
+    if (status === 'connected') {
+      dot.className = 'file-link__dot file-link__dot--on';
+      name.textContent = fileStore.name || '本地文件';
+      btn.textContent = '断开';
+      btn.dataset.action = 'disconnect';
+    } else if (status === 'needs-auth') {
+      dot.className = 'file-link__dot file-link__dot--warn';
+      name.textContent = (fileStore.name || '需重新授权');
+      btn.textContent = '重新授权';
+      btn.dataset.action = 'reauth';
+    } else {
+      dot.className = 'file-link__dot';
+      name.textContent = '未连接';
+      btn.textContent = '连接文件';
+      btn.dataset.action = 'connect';
+    }
+  }
+
+  async function initFileLink() {
+    if (!('showSaveFilePicker' in window)) return;
+    els.fileLink.hidden = false;
+    const status = await fileStore.tryRestore();
+    updateFileLinkUI(status);
+    if (status === 'connected') {
+      const data = await fileStore.read();
+      if (data) store.importData(data);
+      els.dataStatusText.textContent = '已连接本地文件';
+    }
+    els.btnFileLink.addEventListener('click', async () => {
+      const action = els.btnFileLink.dataset.action;
+      if (action === 'connect') {
+        const result = await fileStore.connect();
+        if (result === 'cancelled' || result === 'unsupported') return;
+        if (result && (result.settings || (result.transactions && result.transactions.length > 0))) {
+          if (confirm(`文件中已有数据（${(result.transactions || []).length} 笔交易），是否载入并替换当前数据？`)) {
+            store.importData(result);
+            await loadAndPaint();
+          } else {
+            await fileStore.write(store.getSettings(), store.getTxs()).catch(console.error);
+          }
+        } else {
+          await fileStore.write(store.getSettings(), store.getTxs()).catch(console.error);
+        }
+        updateFileLinkUI('connected');
+        els.dataStatusText.textContent = '已连接本地文件 ✓';
+        setTimeout(() => { els.dataStatusText.textContent = '已连接本地文件'; }, 2500);
+      } else if (action === 'reauth') {
+        const ok = await fileStore.requestPermission();
+        if (ok) {
+          const data = await fileStore.read();
+          if (data) { store.importData(data); await loadAndPaint(); }
+          updateFileLinkUI('connected');
+          els.dataStatusText.textContent = '已连接本地文件';
+        }
+      } else if (action === 'disconnect') {
+        await fileStore.disconnect();
+        updateFileLinkUI('none');
+        els.dataStatusText.textContent = '已保存到本地';
+      }
+    });
+  }
+
   // ===================== 启动 =====================
   grid.mount();
   stars.mount();
-  loadAndPaint();
+  initFileLink().then(() => loadAndPaint());
 
 })();
