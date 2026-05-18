@@ -320,7 +320,7 @@
       const N = this.totalCells;
       let best = { cell: 2, cols: 1, rows: N, gap: 0 };
       for (let s = 40; s >= 2; s--) {
-        const gap = 1;
+        const gap = 0;
         const cols = Math.floor((W + gap) / (s + gap));
         if (cols < 1) continue;
         const rows = Math.ceil(N / cols);
@@ -470,8 +470,8 @@
 
     _fillRange(ctx, color, from, to, step, cell, animating) {
       if (to <= from) return;
-      const inset = cell >= 4 ? 1 : 0;
-      const draw  = cell - 2 * inset;
+      const inset = cell >= 3 ? 1 : 0;
+      const draw  = Math.max(1, cell - 2 * inset);
       ctx.fillStyle = color;
       ctx.beginPath();
       for (let i = from; i < to; i++) {
@@ -488,6 +488,7 @@
       const idx = this.pastCells; // 第一个非过去格 = 今天
       if (!this.totalCells || idx >= this.totalCells) return;
       const r = this.cellRect(idx);
+      const inset = this.cellSize >= 3 ? 1 : 0;
       const cx = r.x + r.w / 2;
       const cy = r.y + r.h / 2;
       // 1.6s 呼吸周期
@@ -505,9 +506,10 @@
       ctx.fillRect(cx - haloR, cy - haloR, haloR * 2, haloR * 2);
       ctx.globalCompositeOperation = 'source-over';
 
-      // 中心格本体 · 用 goldBloom 强标识（无论 today 是 lit 还是 unlit 都覆盖为发光）
+      // 中心格本体 · 内缩 1px 保持边框 · goldBloom 强标识
+      const inner = Math.max(1, r.w - 2 * inset);
       const s = 1 + breath * 0.10;
-      const w = r.w * s, h = r.h * s;
+      const w = inner * s, h = inner * s;
       ctx.fillStyle = C.goldBloom;
       ctx.fillRect(cx - w / 2, cy - h / 2, w, h);
     }
@@ -515,6 +517,7 @@
     drawAnimating(ctx) {
       const now = performance.now();
       const size = this.animations.size;
+      const inset = this.cellSize >= 3 ? 1 : 0;
       // 大批量动画时降级 halo 渲染 · 避免 createRadialGradient 数百次/帧
       const haloStep = size > 100 ? Math.ceil(size / 40) : 1;
       let counter = 0;
@@ -524,6 +527,7 @@
         const r = this.cellRect(idx);
         const cx = r.x + r.w / 2;
         const cy = r.y + r.h / 2;
+        const inner = Math.max(1, r.w - 2 * inset);
         const s = frame.scale;
 
         const drawHalo = frame.halo > 0.02 && (counter % haloStep === 0);
@@ -540,7 +544,7 @@
         }
 
         ctx.fillStyle = frame.color;
-        const w = r.w * s, h = r.h * s;
+        const w = inner * s, h = inner * s;
         ctx.fillRect(cx - w / 2, cy - h / 2, w, h);
         counter++;
       }
